@@ -1,10 +1,16 @@
 require(dplyr)
 require(data.world)
+
 project<- "https://data.world/isabelcachola/f-17-eda-project-1"
 df <- data.world::query(
   data.world::qry_sql("SELECT * FROM WorldHappiness"),
   dataset = project
 )
+
+head(df)
+cor(df[3:12])
+pairs(df[3:12])
+
 summary(df)
 attach(df)
 sdf = dplyr::select(df, happiness_score, economy_gdp_per_capita, family, health_life_expectancy) %>% sample_frac(.1) # The dplyr::select function was used to select only continuous variables so that the pairs() function works in default mode. The sample_frac() function returns a 10% sample of the data so that pairs doesn't choke.
