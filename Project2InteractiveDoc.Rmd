@@ -32,16 +32,41 @@ project <- "https://data.world/cannata/f-17-eda-project-1"
 ```
 
 ## **Introduction** 
-This R Markdown document is made interactive using Shiny. Unlike the more traditional workflow of creating static reports, you can now create documents that allow your readers to change the assumptions underlying your analysis and see the results immediately. 
+This dataset combines 2016 election data with basic demographic data from the US census such as race and education. We then perform logistic regression, linear discriminant analysis, quadratic discriminant analysis and K-nearest neighbor analysis to see if any of the predictors are effective in predicting whether Trump or Clinton win the state.
 
-To learn more, see [Interactive Documents](http://rmarkdown.rstudio.com/authoring_shiny.html).
-
-## Just a plot
+## Linear Discriminant Analysis
 ```{r}
 library(tidyverse)
-renderPlot({ggplot(diamonds) +
-  geom_point(mapping = aes(x=carat, y=price))
-})
+require(dplyr)
+require(data.world)
+require(MASS)
+project <- "https://data.world/ncaldw01/electionsdata"
+
+data.world::set_config(save_config(auth_token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwcm9kLXVzZXItY2xpZW50Ondhbmd3ZWl5aTcyMiIsImlzcyI6ImFnZW50Ondhbmd3ZWl5aTcyMjo6OGRmYzgxYmYtOWNjMS00OWYzLWJkMzEtOTBjZjIxMjE0YTY2IiwiaWF0IjoxNDg0Njk3NDM5LCJyb2xlIjpbInVzZXJfYXBpX3JlYWQiLCJ1c2VyX2FwaV93cml0ZSJdLCJnZW5lcmFsLXB1cnBvc2UiOnRydWV9.DA9rL8enFktjNWwhf141FieMdhmP5mh4bEix0LBGut5cz0Nce5hVQ0-y3mYC5A9JnWpRZmGusmpmRsLr7xzBPg"))
+
+df <- data.world::query(
+  data.world::qry_sql("SELECT * FROM electionsdata2"),
+  dataset = project
+)
+
+
+attach(df)
+sdf = dplyr::select(df, state, votes, votes16_trumpd, votes16_clintonh, pop_vote_winner, at_least_bachelor_s_degree, white_not_latino_population, african_american_population, native_american_population, asian_american_population, population_some_other_race_or_races, latino_population)
+
+sdf = dplyr::mutate(sdf,perc_minority =  african_american_population+ native_american_population+ asian_american_population+ population_some_other_race_or_races+ latino_population)%>%arrange(votes)
+
+# Create a training data set using the 25 states with the lowest number of votes.
+training = sdf%>% dplyr::filter(votes<2000000)
+testing = sdf%>% dplyr::filter(votes>2000000)
+
+# Use the perc_minority column from the testing data to make a lda model predicting whether Trump or Clinton won that state
+election_lda = lda(pop_vote_winner~perc_minority,data = training)
+election_lda
+election_lda_pred = predict(election_lda,testing)
+table(election_lda_pred$class,testing$pop_vote_winner)
+
+
+renderPlot(plot(election_lda))
 ```
 
 ## Inputs and Outputs
