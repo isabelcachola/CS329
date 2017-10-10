@@ -40,9 +40,9 @@ library(tidyverse)
 require(dplyr)
 require(data.world)
 require(MASS)
-project <- "https://data.world/ncaldw01/electionsdata"
+project <- "https://data.world/ncaldw01/election-results"
 
-data.world::set_config(save_config(auth_token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwcm9kLXVzZXItY2xpZW50Ondhbmd3ZWl5aTcyMiIsImlzcyI6ImFnZW50Ondhbmd3ZWl5aTcyMjo6OGRmYzgxYmYtOWNjMS00OWYzLWJkMzEtOTBjZjIxMjE0YTY2IiwiaWF0IjoxNDg0Njk3NDM5LCJyb2xlIjpbInVzZXJfYXBpX3JlYWQiLCJ1c2VyX2FwaV93cml0ZSJdLCJnZW5lcmFsLXB1cnBvc2UiOnRydWV9.DA9rL8enFktjNWwhf141FieMdhmP5mh4bEix0LBGut5cz0Nce5hVQ0-y3mYC5A9JnWpRZmGusmpmRsLr7xzBPg"))
+data.world::set_config(cfg_env("DW_API"))
 
 df <- data.world::query(
   data.world::qry_sql("SELECT * FROM electionsdata2"),
@@ -50,7 +50,6 @@ df <- data.world::query(
 )
 
 
-attach(df)
 sdf = dplyr::select(df, state, votes, votes16_trumpd, votes16_clintonh, pop_vote_winner, at_least_bachelor_s_degree, white_not_latino_population, african_american_population, native_american_population, asian_american_population, population_some_other_race_or_races, latino_population)
 
 sdf = dplyr::mutate(sdf,perc_minority =  african_american_population+ native_american_population+ asian_american_population+ population_some_other_race_or_races+ latino_population)%>%arrange(votes)

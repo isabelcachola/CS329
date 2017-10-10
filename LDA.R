@@ -4,13 +4,13 @@ setwd("C:/Users/Weiyi/OneDrive/Documents/CS 329E")
 df <- read.csv("ElectionsData.csv")
 
 project <- "https://data.world/ncaldw01/electionsdata"
+
+data.world::set_config(save_config(auth_token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwcm9kLXVzZXItY2xpZW50Ondhbmd3ZWl5aTcyMiIsImlzcyI6ImFnZW50Ondhbmd3ZWl5aTcyMjo6OGRmYzgxYmYtOWNjMS00OWYzLWJkMzEtOTBjZjIxMjE0YTY2IiwiaWF0IjoxNDg0Njk3NDM5LCJyb2xlIjpbInVzZXJfYXBpX3JlYWQiLCJ1c2VyX2FwaV93cml0ZSJdLCJnZW5lcmFsLXB1cnBvc2UiOnRydWV9.DA9rL8enFktjNWwhf141FieMdhmP5mh4bEix0LBGut5cz0Nce5hVQ0-y3mYC5A9JnWpRZmGusmpmRsLr7xzBPg"))
+
 df <- data.world::query(
   data.world::qry_sql("SELECT * FROM electionsdata2"),
   dataset = project
 )
-
-
-data.world::set_config(save_config(auth_token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwcm9kLXVzZXItY2xpZW50Ondhbmd3ZWl5aTcyMiIsImlzcyI6ImFnZW50Ondhbmd3ZWl5aTcyMjo6OGRmYzgxYmYtOWNjMS00OWYzLWJkMzEtOTBjZjIxMjE0YTY2IiwiaWF0IjoxNDg0Njk3NDM5LCJyb2xlIjpbInVzZXJfYXBpX3JlYWQiLCJ1c2VyX2FwaV93cml0ZSJdLCJnZW5lcmFsLXB1cnBvc2UiOnRydWV9.DA9rL8enFktjNWwhf141FieMdhmP5mh4bEix0LBGut5cz0Nce5hVQ0-y3mYC5A9JnWpRZmGusmpmRsLr7xzBPg"))
 
 
 attach(df)
