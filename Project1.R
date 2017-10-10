@@ -9,7 +9,7 @@ df <- data.world::query(
 
 head(df)
 cor(df[3:12])
-pairs(df[3:12])
+pairs(df[9:11])
 
 summary(df)
 attach(df)
@@ -40,3 +40,5 @@ summary(fitHappinessFreedom)
 fitHappinessGov <- lm(happiness_score~trust_government_corruption, df)
 fitHappinessGov
 summary(fitHappinessGov)
+
+plot(family, generosity)
