@@ -31,3 +31,48 @@ plot(election_lda)
 data.frame(election_lda)[1:5,]
 election_lda_pred = predict(election_lda,testing)
 table(election_lda_pred$class,testing$pop_vote_winner)
+
+
+# Use different testing and training data
+training = sdf%>% dplyr::filter(state<"Montana")
+testing = sdf%>% dplyr::filter(state>"Missouri")
+
+election_lda = lda(pop_vote_winner~perc_minority,data = training)
+plot(election_lda)
+data.frame(election_lda)[1:5,]
+election_lda_pred = predict(election_lda,testing)
+table(election_lda_pred$class,testing$pop_vote_winner)
+
+#--------------------------------------------------------------------------------------------------------------
+# Logistic Regression
+
+# Change Trump to 1 and Hillary to 0
+sdf = dplyr::mutate(sdf,trump1hillary0 = if_else(votes16_trumpd>votes16_clintonh,1,0))
+
+training = sdf%>% dplyr::filter(state>"Montana")
+testing = sdf%>% dplyr::filter(state>"Missouri")
+
+perc_min_logis_fit=glm(trump1hillary0~perc_minority, data = training, family = binomial)
+perc_min_logis_probs=predict(perc_min_logis_fit,newdata=testing,type="response") 
+perc_min_logis_pred=ifelse(perc_min_logis_probs >0.55,"Trump","Clinton")
+winner=testing$pop_vote_winner
+table(perc_min_logis_pred,winner)
+mean(perc_min_logis_pred==winner)
+
+#------------------------------------------------------------------------------------------------------------
+# Quadratic Discriminate Analysis
+election_qda = qda(pop_vote_winner~perc_minority,data = training)
+ggplot(election_qda)
+election_qda_pred = predict(election_qda,testing)
+table(election_qda_pred$class,testing$pop_vote_winner)
+
+#------------------------------------------------------------------------------------------------------------
+# K-nearest neighbor
+library(class)
+?knn
+training = sdf%>% dplyr::filter(state<"Montana")
+testing = sdf%>% dplyr::filter(state>"Missouri")
+perc_min_df = dplyr::select(sdf,state,perc_minority)
+perc_min_knn_pred=knn(data.frame(training$perc_minority),data.frame(testing$perc_minority),training$pop_vote_winner,k=1)
+table(perc_min_knn_pred,training$pop_vote_winner)
+mean(perc_min_knn_pred==training$pop_vote_winner)
