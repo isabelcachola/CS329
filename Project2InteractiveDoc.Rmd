@@ -1,13 +1,15 @@
 ---
-title: "Dr. Cannata's Interactive Document Example"
-author: "Dr. Cannata"
+title: "Project 2"
+author: 'Group 10: Nathan Caldwell, Isabel Cachola, Edward Gunawan, Weiyi Wang'
+resource_files:
+- .Renviron
 output:
   html_notebook:
     code_folding: hide
-    toc: true
+    toc: yes
     toc_depth: 4
-    toc_float: true
-runtime: shiny #puts shiny app in notebook
+    toc_float: yes
+runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
@@ -68,9 +70,16 @@ table(election_lda_pred$class,testing$pop_vote_winner)
 renderPlot(plot(election_lda))
 ```
 
-## Inputs and Outputs
+## Explanation and insights of LDA
 
-You can embed Shiny inputs and outputs in your document. Outputs are automatically updated whenever inputs change.  This demonstrates how a standard R plot can be made interactive by wrapping it in the Shiny `renderPlot` function. The `selectInput` and `sliderInput` functions create the input widgets used to drive the plot.
+You can see from the confusion matrix that this model did not do a very good job predicting whether or not Hillary or Trump won that state. In fact it did a terrible job, 15 incorrect vs 10 correct. There was actually a pretty large disparity between the minority populations that each candidate won in the training dataset, with Hillary states at 28% and Trump states  This may suggest that the training data is not representative of the testing data. In this case, the 25 states with the fewest votes were used to predict the results of the remaining states, which may not be the best way to create a testing data set. We should probably try a different distribution of training/testing data across the 50 states to see if we can get a better model.
+
+
+## LDA Part2
+```{r}
+
+```
+
 
 ```{r eruptions}
 inputPanel(
