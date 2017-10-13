@@ -526,8 +526,6 @@ In Summary, for these particular variables, uninsured and unemployed the Linear 
 
 =======
 
-
-
 ## **White-Collar Workforce**{.tabset .tabset-fade}
 
 ### Overview
@@ -647,6 +645,8 @@ mean(n.knn.preds==ndata$pop_vote_winner[!train_cond])
 ```
 
 Why is this KNN fit so much worse than the others at predicting the election outcome?
+
+
 
 ## Embedded Application
 
