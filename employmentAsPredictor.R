@@ -10,7 +10,11 @@ df <- data.world::query(
   data.world::qry_sql("SELECT * FROM ElectionsData2"),
   dataset = project
 )
-
+View(df)
+sdf = df %>% dplyr::select(., -matches("16_"), -state, -total_population, -votes) %>%
+  dplyr::mutate(winner=ifelse(pop_vote_winner=="Trump", 1, 0)) %>%
+  dplyr::select(., -pop_vote_winner)
+sdf %>% cor() %>% data.frame() %>% View()
 # Adding winner
 df = dplyr::mutate(df, winner=ifelse(pop_vote_winner=="Trump", 1, 0))
 attach(df)
