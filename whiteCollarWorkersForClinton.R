@@ -7,8 +7,8 @@ df <- data.world::query(
   dplyr::mutate(winner=ifelse(pop_vote_winner=="Trump",1,0))
 attach(df)
 
-train = df[1:34]
-test = df[35:50]
+train = df[1:34,]
+test = df[35:50,]
 
 # Found correlations
 data.frame("winner") %>%
