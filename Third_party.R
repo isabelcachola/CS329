@@ -162,7 +162,8 @@ logistic_func <-function(glm.fit,bound){
   glm.pred=ifelse(glm.probs > bound,"Clinton","Trump")
   print(table(glm.pred,df_test$bin_winner))
   print(paste('Percent correct:', toString(mean(glm.pred==df_test$pop_vote_winner))))
-  subset(df_test, glm.pred!=df_test$pop_vote_winner)$State
+  print('States predicted incorrectly:')
+  print(subset(df_test, glm.pred!=df_test$pop_vote_winner)$State)
 }
 
 logistic_func(glm(bin_winner~perc_stein, data=df_train,family=binomial),0.6)
