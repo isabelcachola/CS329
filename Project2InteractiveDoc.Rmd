@@ -520,15 +520,16 @@ attach(data)
 # Illustrated correlations
 d <- data.frame("winner") %>%
   dplyr::mutate(
-    mgmt_prof=cor(winner,management_professional_and_related_occupations),
-    service=cor(winner,service_occupations),
-    sales_office=cor(winner,sales_and_office_occupations),
-    agriculture=cor(winner,farming_fishing_and_forestry_occupations),
-    construction=cor(winner,construction_extraction_maintenance_and_repair_occupations),
-    transportation=cor(winner,production_transportation_and_material_moving_occupations)
+    mgmt_prof=cor(data$winner,management_professional_and_related_occupations),
+    service=cor(data$winner,service_occupations),
+    sales_office=cor(data$winner,sales_and_office_occupations),
+    agriculture=cor(data$winner,farming_fishing_and_forestry_occupations),
+    construction=cor(data$winner,construction_extraction_maintenance_and_repair_occupations),
+    transportation=cor(data$winner,production_transportation_and_material_moving_occupations)
   )
 
 d
+```
 ```
 
 Having noticed that trend, I decided to use the three white-collar professions as predictors. 
@@ -556,8 +557,10 @@ n.glm.fit = glm(winner~
 
 n.glm.preds = predict(n.glm.fit,newdata=n.test,type="response")
 n.glm.preds = ifelse(n.glm.preds>0.5,"Trump","Clinton") %>% data.frame()
+
 table(n.glm.preds$., n.test$pop_vote_winner)
 mean(n.glm.preds$.==n.test$pop_vote_winner) # 0.81
+n.glm.fit
 ```
 
 ### LDA
@@ -575,6 +578,7 @@ n.lda.preds=predict(n.lda.fit,n.test) %>% data.frame()
 
 table(n.lda.preds$class, n.test$pop_vote_winner)
 mean(n.lda.preds$class==n.test$pop_vote_winner) # 0.875
+n.lda.fit
 ```
 
 ### QDA
@@ -588,9 +592,10 @@ n.qda.fit = qda(pop_vote_winner~
                 sales_and_office_occupations,
               data=n.train)
 n.qda.preds=predict(n.qda.fit,n.test) %>% data.frame()
-table(n.qda.preds$class,n.test$pop_vote_winner)
 
+table(n.qda.preds$class,n.test$pop_vote_winner)
 mean(n.qda.preds$class==n.test$pop_vote_winner) # 0.8125
+n.qda.fit
 ```
 
 ### KNN
@@ -610,7 +615,7 @@ n.knn.preds=knn(
   k=1)
 
 table(n.knn.preds,pop_vote_winner[!train_cond])
-mean(n.knn.pred==pop_vote_winner[!train_cond])
+mean(n.knn.preds==pop_vote_winner[!train_cond])
 ```
 
 Why is this KNN fit so much worse than the others at predicting the election outcome?
