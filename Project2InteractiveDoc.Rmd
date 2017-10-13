@@ -170,9 +170,6 @@ In summary:
 
 - More interestingly, percentage of votes for Jill Stein is a relatively good predictor of who won the state
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-Setting up data set... 
 ```{r}
 require(MASS)
 require(ISLR)
@@ -379,10 +376,6 @@ renderPlot(ggplot(sdf,aes(x=pop_vote_winner,y=perc_stein,col=sdf$fCategory)) + g
 
 States that Clinton won have generally 
 
-=======
->>>>>>> a088d1b619d5a12ea42ff92899da0fdc4da2c56c
-=======
->>>>>>> a088d1b619d5a12ea42ff92899da0fdc4da2c56c
 ##
 
 
@@ -499,10 +492,10 @@ The KNN alaysis with K = 5 has an accuracy of 78%. This model did not do a very 
 Summary
 
 In Summary, for these particular variables, uninsured and unemployed the Linear Discriminant Analysis as well as the Logistic Regression predicted which candidiate would end up winning in each state. 
-<<<<<<< HEAD
+
 =======
 
-<<<<<<< HEAD
+
 
 ## **White-Collar Workforce**{.tabset .tabset-fade}
 
