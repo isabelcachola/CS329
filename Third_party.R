@@ -10,7 +10,7 @@ names(df)
 
 sdf = dplyr::select(df, rep16_frac, State, votes, votes16_trumpd, votes16_clintonh, votes16_johnsong, votes16_steinj, pop_vote_winner)
 sdf = sdf[complete.cases(sdf),] # Remove rows with NA
-sdf = dplyr::mutate(sdf,perc_third_party = (votes-votes16_trumpd - votes16_clintonh)/votes) # Add percent of third party votes
+sdf = dplyr::mutate(sdf,perc_third_party = (votes - votes16_trumpd - votes16_clintonh)/votes) # Add percent of third party votes
 
 
 ###################### LDA ###############################
@@ -102,7 +102,8 @@ qda_func <-function(qda.fit){
   print(table(qda.pred$class,df_test$pop_vote_winner))
   print(paste('Percent correct:', toString(mean(qda.pred$class==df_test$pop_vote_winner))))
   print(paste('Percent incorrect:', toString(mean(qda.pred$class!=df_test$pop_vote_winner))))
-  subset(df_test, qda.pred$class!=df_test$pop_vote_winner)$State
+  print('States predicted incorrectly:')
+  print(subset(df_test, qda.pred$class!=df_test$pop_vote_winner)$State)
   
 }
 
