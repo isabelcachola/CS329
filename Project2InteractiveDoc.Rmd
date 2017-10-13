@@ -166,8 +166,6 @@ renderPlot({
 })
 ```
 
-##
-
 ## **Third Party Voting**{.tabset .tabset-fade}
 
 ### Overview
@@ -412,7 +410,6 @@ print(count(df2, df2$new_winner_all =='Clinton'))
 
 If everyone who voted for Jill Stein or Gary Johnson had voted for Clinton, she would have won an additional 5 states. However, this is a less likely scenario because had Gary Johnson not been a candidate, many of his voters would likely have voted for Trump.
 
-##
 
 
 ## Predicition of Election through Uneployment and Uninsured Rates
