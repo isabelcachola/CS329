@@ -154,7 +154,6 @@ for (i in 1:20){
 logistic_func <-function(glm.fit,bound){
   glm.probs=predict(glm.fit,newdata=df_test,type="response") 
   abc <- df_test %>% dplyr::mutate(prior_probs = glm.probs)
-  print(ggplot(data=abc, mapping = aes(x=pop_vote_winner,y=prior_probs)) + geom_boxplot())
   print('Summary of prior probabilities for class Clinton')
   print(summary(subset(abc,pop_vote_winner=='Clinton')$prior_probs))
   print('Summary of prior probabilities for class Trump')
@@ -167,6 +166,7 @@ logistic_func <-function(glm.fit,bound){
 }
 
 logistic_func(glm(bin_winner~perc_stein, data=df_train,family=binomial),0.6)
+#print(ggplot(data=abc, mapping = aes(x=pop_vote_winner,y=prior_probs)) + geom_boxplot())
 logistic_func(glm(bin_winner~perc_johnson, data=df_train,family=binomial),0.8)
 logistic_func(glm(bin_winner~perc_third_party, data=df_train,family=binomial),0.4)
 
