@@ -508,7 +508,6 @@ In Summary, for these particular variables, uninsured and unemployed the Linear 
 
 ### Overview
 
-
 ### Studying Correlations
 Before modeling, I added a column called **winner** to my data frame. States that went for Trump had value 1; states that went for Clinton had value 0. I then viewed correlations between **winner** and each other variable, hoping to discover variables that might make useful predictors.
 
@@ -517,26 +516,24 @@ In the table below, I've illustrated one interesting discovery. White-collar pro
 ```{r}
 # Importing dataset into RStudio
 project <- "https://data.world/ncaldw01/election-results"
-data <- data.world::query(
+ndata <- data.world::query(  # 'n' is for "nathan"
   data.world::qry_sql("SELECT * FROM ElectionsData2"),
   dataset = project
 ) %>%
   dplyr::mutate(winner=ifelse(pop_vote_winner=="Trump",1,0))
-attach(data)
 
 # Illustrated correlations
 d <- data.frame("winner") %>%
   dplyr::mutate(
-    mgmt_prof=cor(data$winner,management_professional_and_related_occupations),
-    service=cor(data$winner,service_occupations),
-    sales_office=cor(data$winner,sales_and_office_occupations),
-    agriculture=cor(data$winner,farming_fishing_and_forestry_occupations),
-    construction=cor(data$winner,construction_extraction_maintenance_and_repair_occupations),
-    transportation=cor(data$winner,production_transportation_and_material_moving_occupations)
+    mgmt_prof=cor(ndata$winner,ndata$management_professional_and_related_occupations),
+    service=cor(ndata$winner,ndata$service_occupations),
+    sales_office=cor(ndata$winner,ndata$sales_and_office_occupations),
+    agriculture=cor(ndata$winner,ndata$farming_fishing_and_forestry_occupations),
+    construction=cor(ndata$winner,ndata$construction_extraction_maintenance_and_repair_occupations),
+    transportation=cor(ndata$winner,ndata$production_transportation_and_material_moving_occupations)
   )
 
 d
-```
 ```
 
 Having noticed that trend, I decided to use the three white-collar professions as predictors. 
@@ -552,13 +549,13 @@ The following information might clarify some aspects of my models:
 Logistic regression produced a model with a mean accuracy of 81% for testing data with 16 rows. (I used 16 rows to be consistent with my KNN test set. For KNN, the best test condition I could come up with was **state**<='O', which captured 16 rows. Therefore I use a 16-row test set for GLM, LDA, QDA, and KNN.)
 
 ```{r}
-n.train = data[1:34,] # the 'n' is for "nathan"
-n.test = data[35:50,]
+n.train = ndata[1:34,] # the 'n' is for "nathan"
+n.test = ndata[35:50,]
 
-n.glm.fit = glm(winner~
-                management_professional_and_related_occupations+
-                service_occupations+
-                sales_and_office_occupations,
+n.glm.fit = glm(ndata$winner~
+                ndata$management_professional_and_related_occupations+
+                ndata$service_occupations+
+                ndata$sales_and_office_occupations,
               data=n.train,
               family=binomial)
 
@@ -575,10 +572,10 @@ n.glm.fit
 Linear discriminate analysis produced a model with a mean accuracy of 87.5% for testing data with 16 rows.
 
 ```{r}
-n.lda.fit = lda(pop_vote_winner~
-                management_professional_and_related_occupations+
-                service_occupations+
-                sales_and_office_occupations,
+n.lda.fit = lda(ndata$pop_vote_winner~
+                ndata$management_professional_and_related_occupations+
+                ndata$service_occupations+
+                ndata$sales_and_office_occupations,
               data=n.train)
 
 n.lda.preds=predict(n.lda.fit,n.test) %>% data.frame()
@@ -593,10 +590,10 @@ n.lda.fit
 Quadratic discriminate analysis produced a model with a mean accuracy of 81.25%.
 
 ```{r}
-n.qda.fit = qda(pop_vote_winner~
-                management_professional_and_related_occupations+
-                service_occupations+
-                sales_and_office_occupations,
+n.qda.fit = qda(ndata$pop_vote_winner~
+                ndata$management_professional_and_related_occupations+
+                ndata$service_occupations+
+                ndata$sales_and_office_occupations,
               data=n.train)
 n.qda.preds=predict(n.qda.fit,n.test) %>% data.frame()
 
@@ -611,18 +608,18 @@ K-nearest neighbor analysis (k=1) produced a model with a mean accuracy of 50%.
 
 ```{r}
 n.Xlag=cbind(
-  management_professional_and_related_occupations,
-  service_occupations,
-  sales_and_office_occupations)
-train_cond=state<'O'  # -> training set of 34 rows, testing set of 16
+  ndata$management_professional_and_related_occupations,
+  ndata$service_occupations,
+  ndata$sales_and_office_occupations)
+train_cond=ndata$state<'O'  # -> training set of 34 rows, testing set of 16
 n.knn.preds=knn(
   n.Xlag[train_cond,],
   n.Xlag[!train_cond,],
-  pop_vote_winner[train_cond],
+  ndata$pop_vote_winner[train_cond],
   k=1)
 
-table(n.knn.preds,pop_vote_winner[!train_cond])
-mean(n.knn.preds==pop_vote_winner[!train_cond])
+table(n.knn.preds,ndata$pop_vote_winner[!train_cond])
+mean(n.knn.preds==ndata$pop_vote_winner[!train_cond])
 ```
 
 Why is this KNN fit so much worse than the others at predicting the election outcome?
