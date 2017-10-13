@@ -407,6 +407,62 @@ Summary
 In Summary, for these particular variables, uninsured and unemployed the Linear Discriminant Analysis as well as the Logistic Regression predicted which candidiate would end up winning in each state. 
 
 
+## **White-Collar Workforce**{.tabset .tabset-fade}
+
+### Overview
+
+### Studying Correlations
+Before modeling, I added a column called **winner** to my data frame. States that went for Trump had value 1; states that went for Clinton had value 0. I then viewed correlations between **winner** and each other variable, hoping to discover variables that might make useful predictors.
+
+In the table below, I've illustrated one interesting discovery. White-collar professions are *negatively* correlated with **winner**, while blue-collar professions are *postiviely* correlated. That suggests that a higher proportion of white-collar jobs made a state more likely to go Clinton.
+
+```{r}
+# Importing dataset into RStudio
+project <- "https://data.world/ncaldw01/election-results"
+data <- data.world::query(
+  data.world::qry_sql("SELECT * FROM ElectionsData2"),
+  dataset = project
+) %>%
+  dplyr::mutate(winner=ifelse(pop_vote_winner=="Trump",1,0))
+attach(data)
+
+# Illustrated correlations
+d <- data.frame("winner") %>%
+  dplyr::mutate(
+    mgmt_prof=cor(winner,management_professional_and_related_occupations),
+    service=cor(winner,service_occupations),
+    sales_office=cor(winner,sales_and_office_occupations)
+  )
+
+d
+
+project <- "https://data.world/ncaldw01/election-results"
+
+data.world::set_config(cfg_env("DW_API"))
+
+df <- data.world::query(
+  data.world::qry_sql("SELECT * FROM electionsdata2"),
+  dataset = project
+)
+
+
+sdf = dplyr::select(df, state, votes, votes16_trumpd, votes16_clintonh, pop_vote_winner, at_least_bachelor_s_degree, white_not_latino_population, african_american_population, native_american_population, asian_american_population, population_some_other_race_or_races, latino_population)
+
+sdf = dplyr::mutate(sdf,perc_minority =  african_american_population+ native_american_population+ asian_american_population+ population_some_other_race_or_races+ latino_population)%>%arrange(votes)
+
+# Create a training data set using the 25 states with the lowest number of votes.
+training = sdf%>% dplyr::filter(votes<2000000)
+testing = sdf%>% dplyr::filter(votes>2000000)
+
+# Use the perc_minority column from the testing data to make a lda model predicting whether Trump or Clinton won that state
+election_lda = lda(pop_vote_winner~perc_minority,data = training)
+election_lda
+election_lda_pred = predict(election_lda,testing)
+table(election_lda_pred$class,testing$pop_vote_winner)
+
+
+renderPlot(plot(election_lda))
+```
 
 
 ## Embedded Application
