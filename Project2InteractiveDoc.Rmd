@@ -265,7 +265,7 @@ KNN Linear Discriminant Analysis is as follows
 ```{r}
 
 #K Nearest Neighbors Analysis
-#attach(Edf2)
+attach(Edf2)
 vbind = cbind(Uninsured, Unemployment)
 train_comb = State>'Maine'
 knn.pred=knn(vbind[train_comb,],vbind[!train_comb,],pop_vote_winner[train_comb],k=5)
