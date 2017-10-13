@@ -171,12 +171,6 @@ In summary:
 - More interestingly, percentage of votes for Jill Stein is a relatively good predictor of who won the state
 
 ```{r}
-require(MASS)
-require(ISLR)
-require(tidyverse)
-library(dplyr)
-require(class)
-
 project<- "https://data.world/ncaldw01/election-results"
 df <- read.csv("https://query.data.world/s/9AePdX0-UXY6R90eqhjXNuTAA1imZ9", header=TRUE, stringsAsFactors=FALSE);
 #names(df)
@@ -388,9 +382,8 @@ print(count(sdf, sdf$pop_vote_winner =='Clinton'))
 **After merge**
 ```{r}
 df2 <- df[complete.cases(df),]
-attach(df2)
-df2 <- dplyr:: mutate(df2, new_clinton_stein = (votes16_clintonh+votes16_steinj))
-df2 <- dplyr:: mutate(df2, new_winner_stein = ifelse(new_clinton_stein > votes16_trumpd, 'Clinton','Trump'))
+df2 <- dplyr:: mutate(df2, new_clinton_stein = (df2$votes16_clintonh+df2$votes16_steinj))
+df2 <- dplyr:: mutate(df2, new_winner_stein = ifelse(df2$new_clinton_stein > df2$votes16_trumpd, 'Clinton','Trump'))
 
 print(count(df2, df2$new_winner_stein =='Clinton'))
 ```
