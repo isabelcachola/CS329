@@ -10,7 +10,7 @@ names(df)
 
 sdf = dplyr::select(df, rep16_frac, State, votes, votes16_trumpd, votes16_clintonh, votes16_johnsong, votes16_steinj, pop_vote_winner)
 sdf = sdf[complete.cases(sdf),] # Remove rows with NA
-sdf = dplyr::mutate(sdf,perc_third_party = (votes16_johnsong+votes16_steinj)/votes) # Add percent of third party votes
+sdf = dplyr::mutate(sdf,perc_third_party = (votes-votes16_trumpd - votes16_clintonh)/votes) # Add percent of third party votes
 
 
 ###################### LDA ###############################
@@ -148,4 +148,33 @@ for (i in 1:20){
 
 # k = 5
 
-###### Majority Vote ########
+############################ Logistic Regression #################################
+
+logistic_func <-function(glm.fit,bound){
+  glm.probs=predict(glm.fit,newdata=df_test,type="response") 
+  abc <- df_test %>% dplyr::mutate(prior_probs = glm.probs)
+  print(ggplot(data=abc, mapping = aes(x=pop_vote_winner,y=prior_probs)) + geom_boxplot())
+  print('Summary of prior probabilities for class Clinton')
+  print(summary(subset(abc,pop_vote_winner=='Clinton')$prior_probs))
+  print('Summary of prior probabilities for class Trump')
+  print(summary(subset(abc,pop_vote_winner=='Trump')$prior_probs))
+  glm.pred=ifelse(glm.probs > bound,"Clinton","Trump")
+  print(table(glm.pred,df_test$bin_winner))
+  print(paste('Percent correct:', toString(mean(glm.pred==df_test$pop_vote_winner))))
+  subset(df_test, glm.pred!=df_test$pop_vote_winner)$State
+}
+
+logistic_func(glm(bin_winner~perc_stein, data=df_train,family=binomial),0.6)
+logistic_func(glm(bin_winner~perc_johnson, data=df_train,family=binomial),0.8)
+logistic_func(glm(bin_winner~perc_third_party, data=df_train,family=binomial),0.4)
+
+############### What if everyone who voted for Stein voted for Hillary? ####################
+count(sdf, sdf$pop_vote_winner =='Clinton')
+df2 <- df[complete.cases(df),]
+attach(df2)
+df2 <- dplyr:: mutate(df2, new_clinton_stein = (votes16_clintonh+votes16_steinj))
+df2 <- dplyr:: mutate(df2, new_winner_stein = ifelse(new_clinton_stein > votes16_trumpd, 'Clinton','Trump'))
+df2 <- dplyr:: mutate(df2, new_clinton_all = (votes16_clintonh+votes16_steinj+votes16_johnsong))
+df2 <- dplyr:: mutate(df2, new_winner_all = ifelse(new_clinton_all > votes16_trumpd, 'Clinton','Trump'))
+count(df2, df2$new_winner_stein =='Clinton')
+count(df2, df2$new_winner_all =='Clinton')
