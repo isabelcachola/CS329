@@ -31,7 +31,9 @@ TBD
 ## **Introduction** 
 This dataset combines 2016 election data with basic demographic data from the US census such as race and education. We then perform logistic regression, linear discriminant analysis, quadratic discriminant analysis and K-nearest neighbor analysis to see if any of the predictors are effective in predicting whether Trump or Clinton win the state.
 
-## Linear Discriminant Analysis
+## **Minority Population**{.tabset .tabset-fade}
+
+### Linear Discriminant Analysis
 ```{r}
 library(tidyverse)
 require(dplyr)
@@ -65,12 +67,12 @@ table(election_lda_pred$class,testing$pop_vote_winner)
 renderPlot(plot(election_lda))
 ```
 
-## Explanation and insights of LDA
+### Explanation and insights of LDA
 
 You can see from the confusion matrix that this model did not do a very good job predicting whether or not Hillary or Trump won that state. In fact it did a terrible job, 15 incorrect vs 10 correct. There was actually a pretty large disparity between the minority populations that each candidate won in the training dataset, with Hillary states at 28% and Trump states  This may suggest that the training data is not representative of the testing data. In this case, the 25 states with the fewest votes were used to predict the results of the remaining states, which may not be the best way to create a testing data set. We should probably try a different distribution of training/testing data across the 50 states to see if we can get a better model.
 
 
-## LDA Part2
+### LDA Part2
 ```{r}
 # Create a training set using randomly selected states. In this case I just go with the first 25 states according to alphabetical order.
 training = sdf%>% dplyr::filter(state<"Montana")
@@ -85,12 +87,12 @@ table(election_lda_pred$class,testing$pop_vote_winner)
 
 renderPlot(plot(election_lda))
 ```
-## Explanation of LDA part 2
+### Explanation of LDA part 2
 
 We see that the predictions are better than before. 56% accuracy as compared to the previous 40% accuracy. This means that this separation of testing and training data is more appropriate than the previous division. This also suggests that the states with the fewest votes did not follow a similar pattern to the states with more votes, which would explain why the model generated from the training data is not good at predicting the results of the testing data. We will be using these new testing and training sets from now on. (Note: I know I could have chosen the training and testing sets completely randomly using the runif() function, but for the sake of keeping the data consistent, I decided to arbitrarily split it, so that the data would be the same with each run of the RMarkdown file)
 
 
-## Logistic Regression
+### Logistic Regression
 
 ```{r}
 sdf = dplyr::mutate(sdf,trump1hillary0 = if_else(votes16_trumpd>votes16_clintonh,1,0))
@@ -108,7 +110,7 @@ perc_min_logis_probs
 renderPlot(ggplot(testing,aes(x=perc_minority,y=trump1hillary0))+geom_point()+stat_smooth(method="glm",method.args=list(family="binomial"),se=F))
 ```
 
-## Quadratic Discriminate Analysis
+### Quadratic Discriminate Analysis
 
 ```{r}
 election_qda = qda(pop_vote_winner~perc_minority,data = training)
@@ -116,7 +118,7 @@ election_qda_pred = predict(election_qda,testing)
 table(election_qda_pred$class,testing$pop_vote_winner)
 ```
 
-## K-nearest neighbor
+### K-nearest neighbor
 
 ```{r}
 require(class)
@@ -127,7 +129,9 @@ table(perc_min_knn_pred,testing$pop_vote_winner)
 #mean(perc_min_knn_pred==training$pop_vote_winner)
 ```
 
-## Summary of findings
+
+
+### Summary of findings
 The results of these models indicate that the percentage of minorities in states are not a strong predictor for whether Hillary clinton won states, but it is a fairly good predictor within the states that Trump won during the election. In the states that Hillary won, the models only predicted correctly about 50% of the time, basically a coin flip. But in the states that Trump won, the models frequently predicted his victory with 80% accuracy or better. This indicates that the racial demographics of Trump supporters is much more concentrated and distinct than those of Hillary supporters among the different states.
 
 Out of the 4 different models which used percent minority as a predictor for whether Hillary or Trump won the state, k nearest neighbor was the most accurate.
@@ -149,6 +153,24 @@ renderPlot({
   lines(dens, col = "blue")
 })
 ```
+
+##
+
+## **Third Party Voting**{.tabset .tabset-fade}
+
+### Overview
+
+The goal of this section is to try to understand how third party voting may have affected the election.
+
+In summary:
+
+- Percentage of third party votes in general is a poor predictor of who won the state
+
+- Percentage of votes for Gary Johnson is also a poor predictor of who won the state
+
+- More interestingly, percentage of votes for Jill Stein is a relatively good predictor of who won the state
+
+##
 
 ## Embedded Application
 
