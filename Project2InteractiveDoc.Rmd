@@ -374,7 +374,38 @@ renderPlot(ggplot(sdf,aes(x=pop_vote_winner,y=perc_stein,col=sdf$fCategory)) + g
 
 ```
 
-States that Clinton won have generally 
+States that Clinton won have generally more liberal populations, so it makes sense that Jill Stein would be able to persuade a higher percentage of them to vote for her.
+
+### Hypothetical
+
+What if everyone who voted for Jill Stein voted for Hillary Clinton?
+
+**Before merge**
+```{r}
+print(count(sdf, sdf$pop_vote_winner =='Clinton'))
+```
+
+**After merge**
+```{r}
+df2 <- df[complete.cases(df),]
+attach(df2)
+df2 <- dplyr:: mutate(df2, new_clinton_stein = (votes16_clintonh+votes16_steinj))
+df2 <- dplyr:: mutate(df2, new_winner_stein = ifelse(new_clinton_stein > votes16_trumpd, 'Clinton','Trump'))
+
+print(count(df2, df2$new_winner_stein =='Clinton'))
+```
+
+If everyone who voted for Jill Stein had voted for Clinton, she would have won an additional 2 states.
+
+What if everyone who voted Stein or Johnson had voted for Clinton?
+
+```{r}
+df2 <- dplyr:: mutate(df2, new_clinton_all = (votes16_clintonh+votes16_steinj+votes16_johnsong))
+df2 <- dplyr:: mutate(df2, new_winner_all = ifelse(new_clinton_all > votes16_trumpd, 'Clinton','Trump'))
+print(count(df2, df2$new_winner_all =='Clinton'))
+```
+
+If everyone who voted for Jill Stein or Gary Johnson had voted for Clinton, she would have won an additional 5 states. However, this is a less likely scenario because had Gary Johnson not been a candidate, many of his voters would likely have voted for Trump.
 
 ##
 
