@@ -34,11 +34,15 @@ This dataset combines 2016 election data with basic demographic data from the US
 ## **Minority Population**{.tabset .tabset-fade}
 
 ### Linear Discriminant Analysis
-```{r}
+```{r include=FALSE}
 library(tidyverse)
 require(dplyr)
 require(data.world)
 require(MASS)
+```
+
+```{r}
+
 project <- "https://data.world/ncaldw01/election-results"
 
 data.world::set_config(cfg_env("DW_API"))
@@ -66,6 +70,8 @@ table(election_lda_pred$class,testing$pop_vote_winner)
 
 renderPlot(plot(election_lda))
 ```
+
+
 
 ### Explanation and insights of LDA
 
@@ -119,15 +125,21 @@ table(election_qda_pred$class,testing$pop_vote_winner)
 ```
 
 ### K-nearest neighbor
+```{r include = FALSE}
+require(class)
+```
+
 
 ```{r}
-require(class)
+
 
 perc_min_knn_pred=knn(data.frame(training$perc_minority),data.frame(testing$perc_minority),training$pop_vote_winner,k=5)
 
 table(perc_min_knn_pred,testing$pop_vote_winner)
 #mean(perc_min_knn_pred==training$pop_vote_winner)
 ```
+
+
 
 
 
@@ -640,49 +652,4 @@ mean(n.knn.preds==ndata$pop_vote_winner[!train_cond])
 
 Why is this KNN fit so much worse than the others at predicting the election outcome?
 
-## Embedded Application
 
-It's also possible to embed an entire Shiny application within an R Markdown document using the `shinyAppDir` function. This example embeds a Shiny application located in another directory:
-
-```{r tabsets}
-shinyAppDir(
-  system.file("examples/06_tabsets", package = "shiny"),
-  options = list(
-    width = "100%", height = 900
-  )
-)
-```
-
-Note the use of the `height` parameter to determine how much vertical space the embedded application should occupy.
-
-You can also use the `shinyApp` function to define an application inline rather then in an external directory.
-
-In all of R code chunks above the `echo = FALSE` attribute is used. This is to prevent the R code within the chunk from rendering in the document alongside the Shiny components.
-
-## Inputs and Outputs 2
-### subtab
-```{r eruptions2}
-inputPanel(
-  selectInput("n_breaks2", label = "Number of bins:",
-              choices = c(10, 20, 35, 50), selected = 20),
-  
-  sliderInput("bw_adjust2", label = "Bandwidth adjustment:",
-              min = 0.2, max = 2, value = 1, step = 0.2)
-)
-
-renderPlot({
-  hist(faithful$eruptions, probability = TRUE, breaks = as.numeric(input$n_breaks2),
-       xlab = "Duration (minutes)", main = "Geyser eruption duration")
-  
-  dens <- density(faithful$eruptions, adjust = input$bw_adjust2)
-  lines(dens, col = "blue")
-})
-```
-
-
-=======
-<<<<<<< HEAD
->>>>>>> a088d1b619d5a12ea42ff92899da0fdc4da2c56c
-=======
->>>>>>> a088d1b619d5a12ea42ff92899da0fdc4da2c56c
->>>>>>> 646dd9a38199ecae40f893bdbe87c5de8e7af9b1
