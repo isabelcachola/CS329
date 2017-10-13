@@ -172,6 +172,124 @@ In summary:
 
 ##
 
+
+## Predicition of Election through Uneployment and Uninsured Rates
+There are many different predictors that would help deterime whether a state would vote Hillary or Trump. However two factors that stand out are the unemployed and the uninsured. The unemployment rate and the uninsured rate are always central topics in elections, and this election was no different. Two major issues that were relevent to this election was wage inequality and universal health care, which are tide directly with unemployment and and uninsured. We wanted to see how the rates of these two factors effected which candidate won in each state. In the confusion matrix, 1 stands for Trump and 0 stands for Hillary. For the sake of this experiment 30 of the 50 states were used for training and the other 20 were used for testing
+
+The following graph shows the states Trump won and which states Hillary one, and where that state liew in terms of uninsured rates and unemployement rates
+
+```{r}
+require(MASS)
+require(ISLR)
+require(tidyverse)
+require(dplyr)
+require(class)
+require(ggplot2)
+
+project<- "https://data.world/ncaldw01/election-results"
+Edf <- read.csv("https://query.data.world/s/9AePdX0-UXY6R90eqhjXNuTAA1imZ9", header=TRUE, stringsAsFactors=FALSE);
+#names(Edf)
+
+Edf2= Edf %>% dplyr::select(State, pop_vote_winner, Uninsured, Unemployment) %>% dplyr::mutate(winner=ifelse(pop_vote_winner=="Trump", 1, 0))
+
+#Edf_train <- Edf2[sample(nrow(Edf2), 30),]
+#Edf_test <- subset(Edf2, !is.element(Edf2$State, Edf_train$State))
+Edf_test = Edf2[1:19,]
+Edf_train = Edf2[20:50,]
+
+renderPlot(ggplot(Edf_test, aes(x = Unemployment, y = Uninsured, colour = winner>0))+ geom_point() + scale_colour_manual(name = 'Candidate', labels = c("Hillary", "Trump"), values = setNames(c('red','blue'),c(T,F))))
+
+
+```
+
+The mean and confustion matrix for a logistic regression are as follow. The graphs below show which points were guessed correctly and incorrectly:
+
+```{r}
+#logistic Regression
+Elogreg2 = glm(winner ~ Uninsured + Unemployment, data = Edf_train, family = binomial)
+Elogreg2_pred = predict(Elogreg2, newdata = Edf_test, type = "response")
+Elogreg2_pred = ifelse(Elogreg2_pred>0.5,1,0) %>% data.frame()
+mean(Elogreg2_pred$.== Edf_test$winner)#0.75
+table(Elogreg2_pred$., Edf_test$winner)
+Elogreg_comb = cbind(Edf_test, Elogreg2_pred)%>% mutate(Correct = ifelse(winner == ., 0, 1))
+
+renderPlot(ggplot(Elogreg_comb, aes(x = Unemployment, y = Uninsured, colour = Correct>0))+ geom_point() + scale_colour_manual(name = 'Correct', labels = c("Correct", "Incorrect"), values = setNames(c('Orange','black'),c(T,F))))
+
+```
+
+The Logisitic Regression has an 89.5% accuracy, meaning that using this model predicted whether or not a state would vote Trump or Hillary with a very high degree of accuracy.
+
+
+Linear Discriminant Analysis is as follows
+
+```{r}
+
+#Linear Discriminant Analysis
+Elda1 = lda( winner ~ Uninsured + Unemployment, data = Edf_train)
+Elda.preds = predict(Elda1,Edf_test) %>% data.frame() 
+
+mean(Elda.preds$class==Edf_test$winner)
+table(Elda.preds$class, Edf_test$winner)
+Elda.preds = cbind(Edf_test, Elda.preds)%>% mutate(Correct = ifelse(winner == class, 0, 1))
+
+
+renderPlot(ggplot(Elda.preds, aes(x = Unemployment, y = Uninsured, colour = Correct>0))+ geom_point() + scale_colour_manual(name = 'Correct', labels = c("Correct", "Incorrect"), values = setNames(c('Orange','black'),c(T,F))))
+
+```
+
+The Linear Regression has an 89.5% accuracy. This model also has a very high predictor of which candidate would win the election.
+
+
+Quadratic Discriminant Analysis is as follows
+
+```{r}
+
+#Quadratic Discriminant Analysis
+Eqda1 = qda( winner ~ Uninsured + Unemployment, data = Edf_train)
+Eqda.preds = predict(Eqda1,Edf_test) %>% data.frame()
+mean(Eqda.preds$class==Edf_test$winner)
+table(Eqda.preds$class, Edf_test$winner)
+Eqda.preds = cbind(Edf_test, Eqda.preds)%>% mutate(Correct = ifelse(winner == class, 0, 1))
+
+
+renderPlot(ggplot(Eqda.preds, aes(x = Unemployment, y = Uninsured, colour = Correct>0))+ geom_point() + scale_colour_manual(name = 'Correct', labels = c("Correct", "Incorrect"), values = setNames(c('Orange','black'),c(T,F)))
+)
+
+```
+
+The Quadratic Discrimant Analysis has an 84.2% accuracy. This model did well but not as well as the Linear Regression or the Logistic Regression.
+
+
+KNN Linear Discriminant Analysis is as follows
+
+```{r}
+
+#K Nearest Neighbors Analysis
+#attach(Edf2)
+vbind = cbind(Uninsured, Unemployment)
+train_comb = State>'Maine'
+knn.pred=knn(vbind[train_comb,],vbind[!train_comb,],pop_vote_winner[train_comb],k=5)
+knn.pred2 = knn.pred %>% data.frame
+table(knn.pred,pop_vote_winner[!train_comb])
+mean(knn.pred==pop_vote_winner[!train_comb])
+knn.pred2 = cbind(Edf_test, knn.pred2) %>% dplyr::mutate(result=ifelse(.=="Trump", 1, 0)) %>% dplyr::mutate(correct = ifelse(winner == result, 0, 1))
+
+
+renderPlot(ggplot(knn.pred2, aes(x = Unemployment, y = Uninsured, colour = correct>0))+ geom_point() + scale_colour_manual(name = 'Correct', labels = c("Correct", "Incorrect"), values = setNames(c('Orange','black'),c(T,F))))
+
+
+
+```
+
+The KNN alaysis with K = 5 has an accuracy of 78%. This model did not do a very good job of predicting whether a state would vote Hillary or Trump in comparison to the other models.
+
+Summary
+
+In Summary, for these particular variables, uninsured and unemployed the Linear Discriminant Analysis as well as the Logistic Regression predicted which candidiate would end up winning in each state. 
+
+
+
+
 ## Embedded Application
 
 It's also possible to embed an entire Shiny application within an R Markdown document using the `shinyAppDir` function. This example embeds a Shiny application located in another directory:
