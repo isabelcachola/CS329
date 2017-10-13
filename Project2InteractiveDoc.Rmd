@@ -29,7 +29,7 @@ TBD
 
 
 ## **Introduction** 
-This dataset combines 2016 election data with basic demographic data from the US census such as race and education. We then perform logistic regression, linear discriminant analysis, quadratic discriminant analysis and K-nearest neighbor analysis to see if any of the features are effective in predicting whether Trump or Clinton win the state.
+This dataset combines 2016 election data with basic demographic data from the US census such as race and education. We then perform logistic regression, linear discriminant analysis, quadratic discriminant analysis and K-nearest neighbor analysis to see if any of the predictors are effective in predicting whether Trump or Clinton win the state.
 
 ## **Minority Population**{.tabset .tabset-fade}
 
@@ -170,6 +170,7 @@ In summary:
 
 - More interestingly, percentage of votes for Jill Stein is a relatively good predictor of who won the state
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 Setting up data set... 
 ```{r}
@@ -380,6 +381,8 @@ States that Clinton won have generally
 
 =======
 >>>>>>> a088d1b619d5a12ea42ff92899da0fdc4da2c56c
+=======
+>>>>>>> a088d1b619d5a12ea42ff92899da0fdc4da2c56c
 ##
 
 
@@ -499,4 +502,7 @@ In Summary, for these particular variables, uninsured and unemployed the Linear 
 <<<<<<< HEAD
 =======
 
+<<<<<<< HEAD
+>>>>>>> a088d1b619d5a12ea42ff92899da0fdc4da2c56c
+=======
 >>>>>>> a088d1b619d5a12ea42ff92899da0fdc4da2c56c
