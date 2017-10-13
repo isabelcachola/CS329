@@ -170,6 +170,7 @@ In summary:
 
 - More interestingly, percentage of votes for Jill Stein is a relatively good predictor of who won the state
 
+<<<<<<< HEAD
 Setting up data set... 
 ```{r}
 require(MASS)
@@ -289,6 +290,96 @@ qda_func(qda(pop_vote_winner~perc_stein, data=df_train))
 qda_func(qda(pop_vote_winner~perc_johnson, data=df_train))
 ```
 
+### KNN
+
+Using K-Nearest Neighbors with k=5 we can see that again Jill Stein is a better predictor of who won the state.
+
+```{r}
+knn_func <- function(knn.pred){
+  print(table(knn.pred,df_test$pop_vote_winner))
+  print(paste('Percent correct:', toString(mean(knn.pred==df_test$pop_vote_winner))))
+  print(paste('Percent incorrect:', toString(mean(knn.pred!=df_test$pop_vote_winner))))
+  print('States predicted incorrectly:')
+  print(subset(df_test, knn.pred !=df_test$pop_vote_winner)$State)
+}
+
+```
+**Percentage of votes for third party**
+```{r}
+knn_func(knn.pred = knn(cbind(df_train$perc_stein),cbind(df_test$perc_third_party),df_train$pop_vote_winner,k=5))
+```
+**Percentage of votes for Jill Stein**
+```{r}
+knn_func(knn.pred = knn(cbind(df_train$perc_stein),cbind(df_test$perc_stein),df_train$pop_vote_winner,k=5))
+```
+**Percentage of votes for Gary Johnson**
+```{r}
+knn_func(knn.pred = knn(cbind(df_train$perc_stein),cbind(df_test$perc_johnson),df_train$pop_vote_winner,k=5))
+```
+
+###Logistic Regression
+
+Using Logistic Regression, we again find that Jill Stein is better preditor than Gary Johnson or overall votes for a third party.
+
+**Percentage of votes for Jill Stein**
+```{r}
+sdf = dplyr::mutate(sdf,bin_winner = ifelse(sdf$pop_vote_winner=='Clinton',1,0))
+df_train <- subset(sdf, sdf$State <'N')
+df_test <- subset(sdf, !is.element(sdf$State, df_train$State))
+logistic_func <-function(glm.fit,bound){
+  glm.probs=predict(glm.fit,newdata=df_test,type="response") 
+  abc <- dplyr::mutate(df_test, prior_probs = glm.probs)
+  print('Summary of prior probabilities for class Clinton')
+  print(summary(subset(abc,pop_vote_winner=='Clinton')$prior_probs))
+  print('Summary of prior probabilities for class Trump')
+  print(summary(subset(abc,pop_vote_winner=='Trump')$prior_probs))
+  glm.pred=ifelse(glm.probs > bound,"Clinton","Trump")
+  print(table(glm.pred,abc$bin_winner))
+  print(paste('Percent correct:', toString(mean(glm.pred==abc$pop_vote_winner))))
+  print('States predicted incorrectly:')
+  print(subset(abc, glm.pred!=abc$pop_vote_winner)$State)
+  return(abc)
+}
+
+abc <- logistic_func(glm(bin_winner~perc_stein, data=df_train,family=binomial),0.25)
+renderPlot(ggplot(data=abc, mapping = aes(x=pop_vote_winner,y=prior_probs)) + geom_boxplot())
+
+```
+
+Looking at the summaries and boxplot of the prior probabilities, there is a clear difference between Clinton and Trump. I set the threshold to 0.25
+
+**Percentage of votes for Gary Johnson**
+```{r}
+a <- logistic_func(glm(bin_winner~perc_johnson, data=df_train,family=binomial),0.6)
+renderPlot(ggplot(data=a, mapping = aes(x=pop_vote_winner,y=prior_probs)) + geom_boxplot())
+```
+
+**Percentage of votes for Third Party**
+```{r}
+c <- logistic_func(glm(bin_winner~perc_third_party, data=df_train,family=binomial),0.6)
+renderPlot(ggplot(data=c, mapping = aes(x=pop_vote_winner,y=prior_probs)) + geom_boxplot())
+```
+
+For Johnson and Third Party, there is no clear value of a threshold. I set the threshold to 0.6 for both but this doesn't perform much better than setting the threshold to 0 or 1 and giving predicting all the states to be a single candidate.
+
+### Analysis
+
+Across all the models percentage of votes for Stein seems to be the best predictor of who won the state over percentage of votes for Gary Johnson or percentage of overall third party votes.
+
+In general this makes sense. Every election there is a percentage of people who vote third party but with the exception of a few election cycles, that percentage is generally not significant enough to drastically affect the outcome. It also makes sense that Johnson would be a poor predictor because his platform could potentially pull voter from both Trump and Clinton, which would cancel each other out.
+
+Let's look at why Stein is a stronger predictor.
+
+```{r}
+sdf$fCategory <- factor(sdf$pop_vote_winner)
+renderPlot(ggplot(sdf,aes(x=pop_vote_winner,y=perc_stein,col=sdf$fCategory)) + geom_boxplot(colour='black') + geom_jitter(position=position_jitter(0)))
+
+```
+
+States that Clinton won have generally 
+
+=======
+>>>>>>> a088d1b619d5a12ea42ff92899da0fdc4da2c56c
 ##
 
 
@@ -405,47 +496,7 @@ The KNN alaysis with K = 5 has an accuracy of 78%. This model did not do a very 
 Summary
 
 In Summary, for these particular variables, uninsured and unemployed the Linear Discriminant Analysis as well as the Logistic Regression predicted which candidiate would end up winning in each state. 
+<<<<<<< HEAD
+=======
 
-
-
-
-## Embedded Application
-
-It's also possible to embed an entire Shiny application within an R Markdown document using the `shinyAppDir` function. This example embeds a Shiny application located in another directory:
-
-```{r tabsets}
-shinyAppDir(
-  system.file("examples/06_tabsets", package = "shiny"),
-  options = list(
-    width = "100%", height = 900
-  )
-)
-```
-
-Note the use of the `height` parameter to determine how much vertical space the embedded application should occupy.
-
-You can also use the `shinyApp` function to define an application inline rather then in an external directory.
-
-In all of R code chunks above the `echo = FALSE` attribute is used. This is to prevent the R code within the chunk from rendering in the document alongside the Shiny components.
-
-## Inputs and Outputs 2
-
-```{r eruptions2}
-inputPanel(
-  selectInput("n_breaks2", label = "Number of bins:",
-              choices = c(10, 20, 35, 50), selected = 20),
-  
-  sliderInput("bw_adjust2", label = "Bandwidth adjustment:",
-              min = 0.2, max = 2, value = 1, step = 0.2)
-)
-
-renderPlot({
-  hist(faithful$eruptions, probability = TRUE, breaks = as.numeric(input$n_breaks2),
-       xlab = "Duration (minutes)", main = "Geyser eruption duration")
-  
-  dens <- density(faithful$eruptions, adjust = input$bw_adjust2)
-  lines(dens, col = "blue")
-})
-```
-
-
+>>>>>>> a088d1b619d5a12ea42ff92899da0fdc4da2c56c
