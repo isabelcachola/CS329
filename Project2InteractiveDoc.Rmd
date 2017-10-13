@@ -563,17 +563,11 @@ d <- data.frame("winner") %>%
 d
 ```
 
-Having noticed that trend, I decided to use the three white-collar professions as predictors. 
-
-### Model Notes
-
-The following information might clarify some aspects of my models:
-* I use the letter 'n' in variable names to distinguish those vars from my partners'. e.g., instead of "knn.preds", I'll name the var "n.knn.preds". 
-* My training set contains 34 rows, and my testing set contains 16. This is because for KNN, the best test condition I could come up with was **state**>='O'. This resulted in a test set with 16 rows. For consistency, I used that same size across all four models.
+Having noticed that trend, I decided to use the three white-collar professions as predictors in a model for election outcome. 
 
 ### Logistic Regression
 
-Logistic regression produced a model with a mean accuracy of 81% for testing data with 16 rows. (I used 16 rows to be consistent with my KNN test set. For KNN, the best test condition I could come up with was **state**<='O', which captured 16 rows. Therefore I use a 16-row test set for GLM, LDA, QDA, and KNN.)
+Logistic regression produced a model with a mean accuracy of 81%.
 
 ```{r}
 n.train = ndata[1:34,] # the 'n' is for "nathan"
