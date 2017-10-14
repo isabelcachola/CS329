@@ -535,7 +535,7 @@ In Summary, for these particular variables, uninsured and unemployed the Linear 
 ### Studying Correlations
 Before modeling, I added a column called **winner** to my data frame. States that went for Trump had value 1; states that went for Clinton had value 0. I then viewed correlations between **winner** and each other variable, hoping to discover variables that might make useful predictors.
 
-In the table below, I've illustrated one interesting discovery. White-collar professions are *negatively* correlated with **winner**, while blue-collar professions are *postiviely* correlated. That suggests that a higher proportion of white-collar jobs made a state more likely to go Clinton.
+In the table below, I've illustrated one interesting discovery. White-collar professions are *negatively* correlated with **winner**, while blue-collar professions are *positively* correlated. That suggests that a higher proportion of white-collar jobs made a state more likely to go Clinton.
 
 ```{r}
 # Importing dataset into RStudio
@@ -602,7 +602,9 @@ n.lda.preds=predict(n.lda.fit,n.test) %>% data.frame()
 table(n.lda.preds$class, n.test$pop_vote_winner)
 mean(n.lda.preds$class==n.test$pop_vote_winner) # 0.875
 n.lda.fit
+renderPlot(plot(n.lda.fit))
 ```
+
 
 ### QDA
 
@@ -623,7 +625,7 @@ n.qda.fit
 
 ### KNN
 
-K-nearest neighbor analysis (k=1) produced a model with a mean accuracy of 50%.
+K-nearest neighbor analysis (k=5) produced a model with a mean accuracy of 87.5%.
 
 ```{r}
 n.Xlag=cbind(
@@ -635,12 +637,8 @@ n.knn.preds=knn(
   n.Xlag[train_cond,],
   n.Xlag[!train_cond,],
   ndata$pop_vote_winner[train_cond],
-  k=1)
+  k=5)
 
 table(n.knn.preds,ndata$pop_vote_winner[!train_cond])
 mean(n.knn.preds==ndata$pop_vote_winner[!train_cond])
 ```
-
-Why is this KNN fit so much worse than the others at predicting the election outcome?
-
-
