@@ -25,7 +25,7 @@ sessionInfo()
 ```
 
 ## **Github Link** 
-TBD
+https://github.com/isabelcachola/CS329
 
 
 ## **Introduction** 
@@ -412,10 +412,12 @@ If everyone who voted for Jill Stein or Gary Johnson had voted for Clinton, she 
 
 
 
-## Predicition of Election through Uneployment and Uninsured Rates
-There are many different predictors that would help deterime whether a state would vote Hillary or Trump. However two factors that stand out are the unemployed and the uninsured. The unemployment rate and the uninsured rate are always central topics in elections, and this election was no different. Two major issues that were relevent to this election was wage inequality and universal health care, which are tide directly with unemployment and and uninsured. We wanted to see how the rates of these two factors effected which candidate won in each state. In the confusion matrix, 1 stands for Trump and 0 stands for Hillary. For the sake of this experiment 30 of the 50 states were used for training and the other 20 were used for testing
+## **Unemployment and Uninsured Rates**{.tabset .tabset-fade}
 
-The following graph shows the states Trump won and which states Hillary one, and where that state liew in terms of uninsured rates and unemployement rates
+### Overview
+There are many different predictors that would help determine whether a state would vote Hillary or Trump. However two factors that stand out are the unemployed and the uninsured. The unemployment rate and the uninsured rate are always central topics in elections, and this election was no different. Two major issues that were relevant to this election were wage inequality and universal health care, which are tied directly with unemployment and uninsured. We wanted to see how the rates of these two factors affected which candidate won in each state. In the confusion matrix, 1 stands for Trump and 0 stands for Hillary. For the sake of this experiment 30 of the 50 states were used for training and the other 20 were used for testing.
+
+The following graph shows the states Trump won and the states Hillary won, and where those states lie in terms of uninsured rates and unemployment rates.
 
 ```{r}
 require(MASS)
@@ -441,6 +443,7 @@ renderPlot(ggplot(Edf_test, aes(x = Unemployment, y = Uninsured, colour = winner
 
 ```
 
+### Logistic Regression
 The mean and confustion matrix for a logistic regression are as follow. The graphs below show which points were guessed correctly and incorrectly:
 
 ```{r}
@@ -458,7 +461,7 @@ renderPlot(ggplot(Elogreg_comb, aes(x = Unemployment, y = Uninsured, colour = Co
 
 The Logisitic Regression has an 89.5% accuracy, meaning that using this model predicted whether or not a state would vote Trump or Hillary with a very high degree of accuracy.
 
-
+### LDA
 Linear Discriminant Analysis is as follows
 
 ```{r}
@@ -478,7 +481,7 @@ renderPlot(ggplot(Elda.preds, aes(x = Unemployment, y = Uninsured, colour = Corr
 
 The Linear Regression has an 89.5% accuracy. This model also has a very high predictor of which candidate would win the election.
 
-
+### QDA
 Quadratic Discriminant Analysis is as follows
 
 ```{r}
@@ -498,19 +501,18 @@ renderPlot(ggplot(Eqda.preds, aes(x = Unemployment, y = Uninsured, colour = Corr
 
 The Quadratic Discrimant Analysis has an 84.2% accuracy. This model did well but not as well as the Linear Regression or the Logistic Regression.
 
-
+### KNN
 KNN Linear Discriminant Analysis is as follows
 
 ```{r}
 
 #K Nearest Neighbors Analysis
-attach(Edf2)
-vbind = cbind(Uninsured, Unemployment)
-train_comb = State>'Maine'
-knn.pred=knn(vbind[train_comb,],vbind[!train_comb,],pop_vote_winner[train_comb],k=5)
+vbind = cbind(Edf2$Uninsured, Edf2$Unemployment)
+train_comb = Edf2$State>'Maine'
+knn.pred=knn(vbind[train_comb,],vbind[!train_comb,],Edf2$pop_vote_winner[train_comb],k=5)
 knn.pred2 = knn.pred %>% data.frame
-table(knn.pred,pop_vote_winner[!train_comb])
-mean(knn.pred==pop_vote_winner[!train_comb])
+table(knn.pred,Edf2$pop_vote_winner[!train_comb])
+mean(knn.pred==Edf2$pop_vote_winner[!train_comb])
 knn.pred2 = cbind(Edf_test, knn.pred2) %>% dplyr::mutate(result=ifelse(.=="Trump", 1, 0)) %>% dplyr::mutate(correct = ifelse(winner == result, 0, 1))
 
 
@@ -522,9 +524,9 @@ renderPlot(ggplot(knn.pred2, aes(x = Unemployment, y = Uninsured, colour = corre
 
 The KNN alaysis with K = 5 has an accuracy of 78%. This model did not do a very good job of predicting whether a state would vote Hillary or Trump in comparison to the other models.
 
-Summary
+### Summary
 
-In Summary, for these particular variables, uninsured and unemployed the Linear Discriminant Analysis as well as the Logistic Regression predicted which candidiate would end up winning in each state. 
+In Summary, for these particular variables, uninsured and unemployed, the Linear Discriminant Analysis as well as the Logistic Regression predicted which candidate would end up winning in each state. 
 
 =======
 
@@ -532,10 +534,11 @@ In Summary, for these particular variables, uninsured and unemployed the Linear 
 
 ### Overview
 
-### Studying Correlations
-Before modeling, I added a column called **winner** to my data frame. States that went for Trump had value 1; states that went for Clinton had value 0. I then viewed correlations between **winner** and each other variable, hoping to discover variables that might make useful predictors.
+It's often remarked that blue-collar workers were more likely to support Trump than Clinton in 2016. This seems to be common knowledge among the general public *and* statisticians. 
 
-In the table below, I've illustrated one interesting discovery. White-collar professions are *negatively* correlated with **winner**, while blue-collar professions are *positively* correlated. That suggests that a higher proportion of white-collar jobs made a state more likely to go Clinton.
+But can it be said that white-collar workers were more likely to support Clinton?
+
+Curious, I made a preliminary correlation chart, which showed the relationships between **winner** (a numerical variable that held, for each state, 1 for Trump or 0 for Clinton) and the percentages of the state's occupation types. 
 
 ```{r}
 # Importing dataset into RStudio
@@ -560,11 +563,13 @@ d <- data.frame("winner") %>%
 d
 ```
 
+There's a clear divide: blue-collar occupations are correlated to a value of 1 (Trump) in the **winner** column, while white-collar occupations are correlated to a value of 0 (Clinton). 
+
 Having noticed that trend, I decided to use the three white-collar professions as predictors in a model for election outcome. 
 
 ### Logistic Regression
 
-Logistic regression produced a model with a mean accuracy of 81%.
+Logistic regression produced a model with a mean accuracy of 81% for 16 testing observations.
 
 ```{r}
 n.train = ndata[1:34,] # the 'n' is for "nathan"
@@ -588,7 +593,7 @@ n.glm.fit
 
 ### LDA
 
-Linear discriminate analysis produced a model with a mean accuracy of 87.5% for testing data with 16 rows.
+Linear discriminate analysis produced a model with a mean accuracy of 87.5% for 16 testing observations.
 
 ```{r}
 n.lda.fit = lda(pop_vote_winner~
@@ -605,10 +610,11 @@ n.lda.fit
 renderPlot(plot(n.lda.fit))
 ```
 
+The chart above is a good indication that the model is doing something right, because of the lack of significant overlap between the two classes. 
 
 ### QDA
 
-Quadratic discriminate analysis produced a model with a mean accuracy of 81.25%.
+Quadratic discriminate analysis produced a model with a mean accuracy of 81.25% for 16 testing observations.
 
 ```{r}
 n.qda.fit = qda(pop_vote_winner~
@@ -625,7 +631,7 @@ n.qda.fit
 
 ### KNN
 
-K-nearest neighbor analysis (k=5) produced a model with a mean accuracy of 87.5%.
+K-nearest neighbor analysis (k=5) produced a model with a mean accuracy of 87.5% for 16 testing observations.
 
 ```{r}
 n.Xlag=cbind(
@@ -642,3 +648,16 @@ n.knn.preds=knn(
 table(n.knn.preds,ndata$pop_vote_winner[!train_cond])
 mean(n.knn.preds==ndata$pop_vote_winner[!train_cond])
 ```
+
+### Summary of Findings
+
+We found that the higher a state's proportion of white-collar workers, the more likely it was to go to Clinton in the general. 
+
+A fit generated by either linear discriminate analysis or k-nearest neighbors analysis managed to successfully predict the election outcome roughly 88% of the time. (To put that into perspective, that suggests it might be expected to predict 44 out of 50 states correctly. That's a lot!)
+
+There are many outstanding questions that could prove interesting for further research. For example:
+
+* If we had used CV to test against all 50 states, might we have found that the states the model *failed* to predict were swing states? 
+* If so, would it be possible to demonstrate that swing states are more evenly split between blue-collar and white-collar workers? 
+* Considering that the election result was so frequently misforecast, how can it be that a novice statistician could quickly create models to predict 88% of states' outcomes correctly? 
+* Is this an indication of how difficult it is to verify a model's accuracy when you *don't* yet know the outcome? After all, I'm able to assess my model because I can compare its predictions to known results; in the absence of known results, is it substantially more difficult to confidently predict an outcome?
