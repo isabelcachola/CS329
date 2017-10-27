@@ -123,8 +123,6 @@ summary(count_lm)
 count_lm_2 = lm(percent_success~poly(ct_by_state,2),data=df_w2)
 count_lm_2
 summary(count_lm_2)
-count_cases = ggplot(predict_success,aes(x=perc_succ,y=count_lm_2))
-count_cases
 newdat = data.frame(ct_by_state = seq(min(df_w2$ct_by_state), max(df_w2$ct_by_state), length.out = 100))
 newdat$pred = predict(count_lm_2, newdata = newdat)
 plot(percent_success~ct_by_state,data = df_w2)
