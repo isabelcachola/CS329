@@ -31,9 +31,12 @@ https://github.com/isabelcachola/CS329
 ## **Data.world Link**
 https://data.world/isabelcachola/f-17-eda-project-3/
 
+## Disclaimer
+Not all data.world insights are fully represented in this RMD document. Please view data.world for deeper analysis
+
 ## Trend of Kickstarter support over time
 
-Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/17f27a77-754f-4871-8153-11c855f5a56e
+###Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/17f27a77-754f-4871-8153-11c855f5a56e
 ```{r}
 require(MASS)
 require(ISLR)
@@ -98,7 +101,7 @@ Based on the coefficients, this model also predicts that there is an overall dow
 
 ## Subset Selection of Predictors for Kickstarter Success Rate
 
-Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/ca2d7a97-86af-4f8d-b09c-d0a3c80cb69b
+###Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/ca2d7a97-86af-4f8d-b09c-d0a3c80cb69b
 I wanted to see if there were any good predictors of kickstarter success rate within the ACS census data, so I joined the data attained from kickstarter with various measures from the census data that I suspected might be correlated with the success rate of kickstarters. percent_college_degree,percent_above_150k_income,population_age_30to59,percent_divorced_male,percent_tech_business were the variables that I attained from the census data. Then I used ridge regression and shrinkage to try to determine which variables I should use in the model.
 ```{r}
 df_w2 <- data.world::query(
@@ -116,7 +119,7 @@ Surprisingly, the subset selection shows that the best model consists of just a 
 
 ## LDA Model prediction of Success
 
-Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/8c6d1766-c3fc-408c-81c6-d23226c17ce0
+###Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/8c6d1766-c3fc-408c-81c6-d23226c17ce0
 I decided to perform ridge regression and lasso on the same five variables to see whether or not these model selection methods agree with the previous conclusion that percent of divorced males within a state's population is the best individual predictor for success of kickstarters.
 
 ```{r}
@@ -166,7 +169,7 @@ The LDA predicts that kickstarters will fail 100% of the time. A look at the sum
 
 ## Does Quantity of Kickstarters correlate with Success rate
 
-Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/4d8b020b-75c3-4803-b563-a2f56055a84f
+###Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/4d8b020b-75c3-4803-b563-a2f56055a84f
 I wanted to see whether the quantity of kickstarters within a state correlates at all with the success rate of kickstarters within that state. First I used cross validation to determine what degree model to use.
 ```{r}
 # fit some polynomials degrees 1-5
@@ -329,7 +332,7 @@ Based on this model, we can draw the conclusion that the day of the week the Kic
 
 ## Subset Selection to Predict net amount of goal reached
 
-Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/a4ecf2c9-dbee-48a9-91a8-249ea1fd11f3
+###Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/a4ecf2c9-dbee-48a9-91a8-249ea1fd11f3
 I wanted to see which features would best predict the net amount pledged (i.e. amount pledged - goal).
 
 First let's set up the data then run exhaustive subset selection:
@@ -365,7 +368,7 @@ This regression has a very small p-value and an Adjusted R2 of 0.995, meaning th
 
 ## Distribution of the Percentage of Goal Reached
 
-Link: https://data.world/isabelcachola/f-17-eda-project-3/insights/757f1298-d235-4351-8cf7-27b35037dadc
+###Link: https://data.world/isabelcachola/f-17-eda-project-3/insights/757f1298-d235-4351-8cf7-27b35037dadc
 ALthough this does not specifically involve modeling, I think that the distribution of the percentage of goal reached still gives interesting insight into how Kickstarters work. First let's set up the data:
 
 ```{r}
@@ -436,7 +439,7 @@ In conclusion:
 
 ## K Selection Using Validation
 
-Link: https://data.world/isabelcachola/f-17-eda-project-3/insights/41589cec-cac5-42b7-a098-82e7595011d7
+###Link: https://data.world/isabelcachola/f-17-eda-project-3/insights/41589cec-cac5-42b7-a098-82e7595011d7
 Using number of backers as a predictor of success or failure, I used Validation to select the optimal K for K-Nearest Neighboors
 
 ```{r}
@@ -487,7 +490,7 @@ higher than failed campaigns, which makes sense.
 
 ## Percentage of goal reached as a classification problem
 
-Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/abf237cd-8c64-46d7-972e-3de177db2dec
+###Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/abf237cd-8c64-46d7-972e-3de177db2dec
 After looking at the distribution of percentage of goal reached, I thought it would be more useful to treat it as a classification problem. So I divided the data into three subsets: between 0% and 50% of goal reached, 50% to 100% of goal reached, and 100% + of goal reached. First, let's set up the data:
 
 ```{r}
@@ -528,3 +531,38 @@ renderPlot(ggplot(data = subset(sdf_class,sdf_class$backers_count<5000), mapping
 ```
 
 Looking at the boxplot, it's clear that successful Kickstarters has generally more backers than Kickstarters that lie in the 50% too 100% range, which have more backers than the 0% to 50% range.
+
+##Name length & Description Length (Resampling Method Bootstrap)
+
+###Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/9f9aa78e-2443-4c82-b3ee-f47516b38d47
+
+
+We wanted to see if the Length of the Name and the Length of the description played a role into determining whether or not a campaign was successful or not.
+
+We used Validation, Cross Validation, and bootstrap to further look into the error:
+
+We started off by looking at the validation and the cross validation, and we got a cv.glm and a loocv equal to 0.293
+
+We than evaluate the cv.error or the leave one out validation method and plot the degree according to the cv.error. We ran the 10 fold cross validation method as well, overlaying the results on the same graph, and it showed that 
+
+It has very similar error rate according to the degree. Therefore we will choose a degree of 1 because 1 to 7 has virtually the same error rate and 1 is the least complex.
+
+In the summary we can see the Cv.error at a degree of 1 to be exactly 0.239
+
+Full details are found in the insight. 
+
+## Name length and Description Length (Resampling Method)
+
+###Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/85dbd1da-2d88-46cd-92c1-64425a6cb6c0
+
+Boot Strap
+For the bootstrap method we are looking at the same variables: the success (whether or not the campaign reached its goal) along with the length of the blurb and the length of the name
+
+
+When running the statistic function with 3000 bootstraps. We get a std error for t1 of 0.045 which is the intercept and a std error of 0.00342 for t2 which is the coefficient and t3 of 0.00213 which is another coeffient.
+
+If we look at the summary, we can see that the standard errors are slightly different which indicates a slight bias.
+
+The next thing we will look at is using a quadratic statistic. The standard error of t1 is 0.00908 which corresponds to the intercept. The standard error for t2 and t3 is 0.48783 and 0.46734 which are coefficients respectively
+
+Further details are found in the insight.
