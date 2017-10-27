@@ -33,6 +33,7 @@ https://data.world/isabelcachola/f-17-eda-project-3/
 
 ## Trend of Kickstarter support over time
 
+Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/17f27a77-754f-4871-8153-11c855f5a56e
 ```{r}
 require(MASS)
 require(ISLR)
@@ -96,6 +97,8 @@ summary(new.glm.fit)
 Based on the coefficients, this model also predicts that there is an overall downwards trend in the number of backers over time. 
 
 ## Subset Selection of Predictors for Kickstarter Success Rate
+
+Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/ca2d7a97-86af-4f8d-b09c-d0a3c80cb69b
 I wanted to see if there were any good predictors of kickstarter success rate within the ACS census data, so I joined the data attained from kickstarter with various measures from the census data that I suspected might be correlated with the success rate of kickstarters. percent_college_degree,percent_above_150k_income,population_age_30to59,percent_divorced_male,percent_tech_business were the variables that I attained from the census data. Then I used ridge regression and shrinkage to try to determine which variables I should use in the model.
 ```{r}
 df_w2 <- data.world::query(
@@ -112,6 +115,8 @@ renderPlot(plot(reg_w_summary$cp,xlab="Number of Variables",ylab="Cp"))
 Surprisingly, the subset selection shows that the best model consists of just a linear regression of success rate against percentage of divorced males within a state.
 
 ## LDA Model prediction of Success
+
+Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/8c6d1766-c3fc-408c-81c6-d23226c17ce0
 I decided to perform ridge regression and lasso on the same five variables to see whether or not these model selection methods agree with the previous conclusion that percent of divorced males within a state's population is the best individual predictor for success of kickstarters.
 
 ```{r}
@@ -160,6 +165,8 @@ table(divorced_lda_pred$class,testing$status)
 The LDA predicts that kickstarters will fail 100% of the time. A look at the summary for divorced_lda quickly shows why. There is almost no difference in percent of divorced male in cases when the kickstarter succeeded versus when the kickstarter failed. And kickstarters failed 65% of the time, so the model had no reason to guess that any case would succeed.
 
 ## Does Quantity of Kickstarters correlate with Success rate
+
+Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/4d8b020b-75c3-4803-b563-a2f56055a84f
 I wanted to see whether the quantity of kickstarters within a state correlates at all with the success rate of kickstarters within that state. First I used cross validation to determine what degree model to use.
 ```{r}
 # fit some polynomials degrees 1-5
@@ -240,6 +247,7 @@ The model predicts that with this linear model, there is an increase in success 
 
 ## Day launched as a predictor of success
 
+Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/b0626931-72d5-421d-a8ca-da2b10f80ae2
 I wanted to see if the day a Kickstarter was launched is a good predictor of success. First I restrict the data to Kickstarters in the US that are marked as either "failed" or "successful"
 
 First let's set up the data...
@@ -428,6 +436,7 @@ In conclusion:
 
 ## K Selection Using Validation
 
+Link: https://data.world/isabelcachola/f-17-eda-project-3/insights/41589cec-cac5-42b7-a098-82e7595011d7
 Using number of backers as a predictor of success or failure, I used Validation to select the optimal K for K-Nearest Neighboors
 
 ```{r}
@@ -478,6 +487,7 @@ higher than failed campaigns, which makes sense.
 
 ## Percentage of goal reached as a classification problem
 
+Link:https://data.world/isabelcachola/f-17-eda-project-3/insights/abf237cd-8c64-46d7-972e-3de177db2dec
 After looking at the distribution of percentage of goal reached, I thought it would be more useful to treat it as a classification problem. So I divided the data into three subsets: between 0% and 50% of goal reached, 50% to 100% of goal reached, and 100% + of goal reached. First, let's set up the data:
 
 ```{r}
