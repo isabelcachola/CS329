@@ -73,12 +73,12 @@ test$posterior_failed = lda.pred$posterior.failed
 ggplot(data=test, mapping = aes(x=state,y=posterior_failed)) + geom_boxplot()
 
 
-
 ###################### Insight 2 ########################
+
 sdf_select <-dplyr::mutate(sdf, net_pledged = pledged-goal,
                            percent_pledged = pledged/goal,
                            diff_create_launch=as.numeric(as.Date(as.character(sdf$launched_at), format='%m/%d/%Y') - as.Date(as.character(sdf$created_at), format='%m/%d/%Y')))
-sdf_select <- dplyr::select(sdf_select, X, goal, backers_count, name_len, blurb_len,created_at_day,launched_at_day, net_pledged, diff_create_launch)
+sdf_select <- dplyr::select(sdf_select, goal, backers_count, name_len, blurb_len,created_at_day,launched_at_day, net_pledged, diff_create_launch)
 
 #pairs(sdf_select)
 library(leaps)
@@ -89,7 +89,9 @@ plot(reg.summary$cp,xlab="Number of Variables",ylab="Cp")
 which.min(reg.summary$cp)
 points(which.min(reg.summary$cp),reg.summary$cp[which.min(reg.summary$cp)],pch=20,col="red")
 plot(regfit.full,scale="Cp")
-coef(regfit.full,4)
+coef(regfit.full,which.min(reg.summary$cp))
+
+
 
 lm.fit = lm(net_pledged~goal+backers_count+name_len+diff_create_launch, data = sdf_select)
 summary(lm.fit)
@@ -184,7 +186,7 @@ ggplot(data=sdf1, mapping = aes(backers_count)) + geom_histogram(bins=50) + geom
 ############# Insight 6 ################
 
 #K Selection Using Validation
-set.seed(11)
+set.seed(10)
 library(class)
 train <- sample(seq_len(nrow(sdf)), size = .7*nrow(sdf))
 val.percents=rep(NA,10)
@@ -192,10 +194,11 @@ for(i in 1:10){
   knn.pred = knn(cbind(sdf[train,]$backers_count),cbind(sdf[-train,]$backers_count),sdf[train,]$state,k=i)
   val.percents[i]=mean(knn.pred==sdf[-train,]$state)
 }
+which.max(val.percents)
 plot(val.percents,ylab="Percent Correct", pch=20,type="b")
 
-knn.pred = knn(cbind(sdf[train,]$backers_count),cbind(sdf[-train,]$backers_count),sdf[train,]$state,k=9)
-table(knn.pred,sdf[-train,]$state)
+knn.pred = knn(cbind(sdf[train,]$backers_count),cbind(sdf[-train,]$backers_count),sdf[train,]$state,k=which.max(val.percents))
+#table(knn.pred,sdf[-train,]$state)
 mean(knn.pred==sdf[-train,]$state)
 summary(val.percents)
 
@@ -234,7 +237,6 @@ test <- subset(sdf_class, !is.element(sdf_class$X,train$X))
 qda.fit <- qda(class_percent~backers_count, data=train)
 qda.fit
 qda.pred = data.frame(predict(qda.fit, test))
-table(qda.pred$class,test$class_percent)
 mean(qda.pred$class==test$class_percent)
 
 ggplot(data = subset(sdf_class,sdf_class$backers_count<5000), mapping=aes(x=class_percent,y=backers_count)) + geom_boxplot()
