@@ -241,11 +241,11 @@ texas = texas %>%
   ) %>%
   dplyr::mutate(hp_int=ifelse(has_program=="Yes",1,0)) # whether a school receives funding
 
-x=matrix(
+x.n=matrix(
   cbind(texas$lg_int, texas$white),
   ncol=2)
 
-renderPlot(plot(x,col=texas$hp_int+3,pch=19,xlab="Lowest Grade",ylab="White Students"))
+renderPlot(plot(x.n,col=texas$hp_int+3,pch=19,xlab="Lowest Grade",ylab="White Students"))
 ```
 
 
