@@ -3,6 +3,7 @@ title: "Project4"
 author: 'Group 10: Nathan Caldwell, Isabel Cachola, Edward Gunawan, Weiyi Wang'
 resource_files:
 - Renviron
+- .Renviron
 output:
   html_document:
     code_folding: hide
@@ -29,7 +30,7 @@ sessionInfo()
 https://github.com/isabelcachola/CS329
 
 ## **Data.world Link**
-https://data.world/isabelcachola/f-17-eda-project-3/
+https://data.world/isabelcachola/f-17-eda-project-4/
 
 ## Decision Tree Predicting Title 1 Eligibility
 Creating a decision tree that attempts to predict whether or not a school is Title 1 eligible.
