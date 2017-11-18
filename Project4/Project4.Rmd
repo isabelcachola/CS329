@@ -723,9 +723,8 @@ For now we will only look at elementary schools. About 81% of elementary schools
 df_elem <- filter(df_orig, df_orig$level == 'Primary School') %>% filter(Title.1.Eligible == "Yes"|Title.1.Eligible == "No")
 nrow(subset(df_elem, df_elem$Title.1.Eligible == 'Yes'))/nrow(df_elem)
 df_elem <- dplyr::select(df_elem, State, Location.City,
-                    Longitude, Latitude, Title.1.Eligible, Charter, Total.Lunch,
-                   Full.Time.Teachers, PreK.Offered,
-                   member, am, asian, hisp, black, white, pacific, tr, toteth)
+                    Longitude, Latitude, Title.1.Eligible, Total.Lunch,
+                   Full.Time.Teachers, member, am, asian, hisp, black, white, pacific, tr, toteth)
 df_elem_test_vars <- dplyr::select(df_elem, Title.1.Eligible, Total.Lunch,
                             Full.Time.Teachers, am, asian, hisp, black, white, pacific, tr, toteth)
 nrow(subset(df_elem, df_elem$Title.1.Eligible=="Yes"))/nrow(df_elem) # Base line = 81 %
