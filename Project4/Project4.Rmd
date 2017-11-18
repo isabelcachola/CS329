@@ -740,22 +740,22 @@ The decision tree tags all the schools as eligible. Evidently there is too much 
 
 **Random Forest**
 
-Let's use a random forest to determine the most important predictors.
+Let's use a random forest to determine the most important predictors.Again this is hard coded to make it run faster.
 
 ```{r}
 require(randomForest)
 set.seed(11)
-train_vars=sample(1:nrow(df_elem_test_vars),36474) # 70% of data
-rf.elem = randomForest(Title.1.Eligible ~ . ,data=df_elem_test_vars, subset=train_vars)
-rf.elem
-varImpPlot(rf.elem,
-           sort = T,
-           main="Variable Importance",
-           pch = 19,
-           col = 'blue')
+#train_vars=sample(1:nrow(df_elem_test_vars),36474) # 70% of data
+#rf.elem = randomForest(Title.1.Eligible ~ . ,data=df_elem_test_vars, subset=train_vars)
+#rf.elem$importance
+#varImpPlot(rf.elem,
+#           sort = T,
+#           main="Variable Importance",
+#           pch = 19,
+#           col = 'blue')
 ```
 
-According to the plot, total number of students that are eligible for free/reduced lunch, number of full time teachers, number of white students, and number of minority students are the most important predictors for Title I eligibility. Let's take the 4 most important.
+Total number of students that are eligible for free/reduced lunch, number of full time teachers, number of white students, and number of minority students are the most important predictors for Title I eligibility. Let's take the 4 most important.
 
 I tested for the optimal number of predictors sampled for splitting at each node in a random forest, but the code is very slow. It is included commented out but the result is hard coded.
 
