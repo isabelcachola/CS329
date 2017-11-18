@@ -5,16 +5,24 @@ library(ggplot2)
 library(dplyr)
 
 project<- "https://data.world/wangweiyi722/f-17-eda-project-4"
+<<<<<<< HEAD
 df_orig <- read.csv("https://query.data.world/s/hvA1ht-J0O9mzt550iY43aXKb5fGDl", header=TRUE, stringsAsFactors=FALSE)
 names(df_orig)
 
+=======
+df_orig <- read.csv("https://query.data.world/s/tZl4yOP0Ui6RbVBm482-KU67IDetEk", header=TRUE, stringsAsFactors=FALSE)
+names(df_orig)
+>>>>>>> 2e9c8aa11e6226c8ac97cb4ee0131e7b634960ed
 ################################# Insght 1 ########################################
 library(maps)
 library(mapdata)
 
 df_map = subset(df_orig, (df_orig$Title.1.Eligible == "Yes")|(df_orig$Title.1.Eligible == "No"))
+<<<<<<< HEAD
 
 df_map <- dplyr::mutate(df_map, factored_stats = factor(df_map$Title.1.Eligible, levels = c("Yes","No")))
+=======
+>>>>>>> 2e9c8aa11e6226c8ac97cb4ee0131e7b634960ed
 
 ### Texas ###
 df_map_texas = subset(df_map, df_map$State == "Texas")
@@ -28,6 +36,15 @@ tx_base <- ggplot(data = tx_df, mapping = aes(x = long, y = lat)) +
 df_map_texas_eligible <- dplyr:: filter(df_map_texas, df_map_texas$Title.1.Eligible=="Yes")
 df_map_texas_not_eligible <- subset(df_map_texas, df_map_texas$Title.1.Eligible=="No")
 
+ditch_the_axes <- theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank()
+)
+
 tx_base +
   geom_point(data = df_map_texas_eligible, mapping = aes(x=Longitude,y=Latitude,colour='Title I Eligible')) +
   geom_point(data = df_map_texas_not_eligible,mapping = aes(x=Longitude,y=Latitude,colour='Not Title I Eligible')) + 
@@ -35,6 +52,7 @@ tx_base +
   geom_point(mapping = aes(x=-96.796988,y=32.776664,colour = 'Major Cities'),size = 5,shape=18) +
   geom_point(mapping = aes(x=-95.369803,y=29.760427,colour = 'Major Cities'),size = 5,shape=18) +
   geom_point(mapping = aes(x=-98.493628,y=29.424122,colour = 'Major Cities'),size = 5,shape=18) + 
+  ditch_the_axes +
   scale_color_brewer(palette="PRGn")
 
 
@@ -59,15 +77,6 @@ for (i in 1:47){
 }
 state_eligibilty_perc <- mutate(state_eligibilty_perc, region = state)
 el_perc <- inner_join(state_eligibilty_perc, states, by = "region")
-
-ditch_the_axes <- theme(
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank()
-)
 
 ggplot(data = el_perc) + 
   geom_polygon(aes(x = long, y = lat, group = group, fill=perc), color = "white") + 
