@@ -199,7 +199,7 @@ library(maps)
 library(mapdata)
 
 project<- "https://data.world/wangweiyi722/f-17-eda-project-4"
-df_orig <- read.csv("https://query.data.world/s/hvA1ht-J0O9mzt550iY43aXKb5fGDl", header=TRUE, stringsAsFactors=FALSE)
+df_orig <- read.csv("https://query.data.world/s/HA6-o2FHiIAxnVdNwfiukSb4hFek3R", header = TRUE, stringsAsFactors = FALSE)
 df_map = subset(df_orig, (df_orig$Title.1.Eligible == "Yes")|(df_orig$Title.1.Eligible == "No"))
 df_map <- dplyr::mutate(df_map, factored_stats = factor(df_map$Title.1.Eligible, levels = c("Yes","No")))
 
@@ -424,7 +424,7 @@ lon <- as.numeric(df_svm$Longitude_Scaled*3)
 T1 <- as.factor(df_svm$Title.1.Eligible)
 df_austin <- data.frame(lat,lon,T1)
 
-austin <- get_googlemap(location= c(lon = -97.743061, lat = 30.267153), maptype = "roadmap",zoom = 11)
+austin <- get_googlemap(center= c(lon = -97.743061, lat = 30.267153), maptype = "roadmap",zoom = 11)
 
 df_austin$Longitude_Scaled <- df_svm$Longitude_Scaled
 df_austin$Latitude <- df_svm$Latitude
@@ -583,7 +583,7 @@ T1 <- as.factor(df_svm$Title.1.Eligible)
 df_sa <- data.frame(lat,lon,T1)
 
 
-sa <- get_googlemap(location= c(lon = -98.493628, lat = 29.424122), maptype = "roadmap",zoom = 11)
+sa <- get_googlemap(center= c(lon = -98.493628, lat = 29.424122), maptype = "roadmap",zoom = 11)
 ggmap(sa) +
   geom_point(data = df_sa, mapping = aes(x=lon,y=lat,colour=T1)) +
   ditch_the_axes + ggtitle("Schools of San Antonio")
@@ -635,7 +635,7 @@ T1 <- as.factor(df_svm$Title.1.Eligible)
 df_la <- data.frame(lat,lon,T1)
 
 
-la <- get_googlemap(location= c(lon = -118.293685, lat = 34.052234), maptype = "roadmap",zoom = 11)
+la <- get_googlemap(center= c(lon = -118.293685, lat = 34.052234), maptype = "roadmap",zoom = 11)
 ggmap(la) +
   geom_point(data = df_la, mapping = aes(x=lon,y=lat,colour=T1)) +
   ditch_the_axes + ggtitle("Schools of Los Angeles")
