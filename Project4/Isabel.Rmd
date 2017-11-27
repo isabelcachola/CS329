@@ -23,10 +23,20 @@ library(maps)
 library(mapdata)
 
 project<- "https://data.world/wangweiyi722/f-17-eda-project-4"
-df_orig <- read.csv("https://query.data.world/s/hvA1ht-J0O9mzt550iY43aXKb5fGDl", header=TRUE, stringsAsFactors=FALSE)
+#df_orig <- read.csv("https://query.data.world/s/hvA1ht-J0O9mzt550iY43aXKb5fGDl", header=TRUE, stringsAsFactors=FALSE)
+
+df_orig <- read.csv("https://query.data.world/s/HA6-o2FHiIAxnVdNwfiukSb4hFek3R", header = TRUE, stringsAsFactors = FALSE)
+
+colnames(df_orig)[1] <- "State"
+colnames(df_orig)[2] <- "Location.City"
+colnames(df_orig)[4] <- "Full.Time.Teachers"
+colnames(df_orig)[8] <- "Total.Lunch"
+colnames(df_orig)[9] <- "Longitude"
+colnames(df_orig)[10] <- "Latitude"
+colnames(df_orig)[11] <-"Title.1.Eligible"
+
 df_map = subset(df_orig, (df_orig$Title.1.Eligible == "Yes")|(df_orig$Title.1.Eligible == "No"))
 df_map <- dplyr::mutate(df_map, factored_stats = factor(df_map$Title.1.Eligible, levels = c("Yes","No")))
-
 ```
 
 **United States Mainland**
@@ -159,7 +169,6 @@ library(e1071)
 set.seed(11)
 df_svm = filter(df_orig, (Title.1.Eligible == "Yes")|(Title.1.Eligible == "No")) %>%
          filter(Location.City == 'AUSTIN' & Longitude < -95 & Latitude < 35) %>%
-         select("Longitude", "Latitude", "Title.1.Eligible") %>%
          mutate(Longitude_Scaled = Longitude/3)
 df_svm$Latitude <- as.numeric(df_svm$Latitude)
 df_svm$Longitude <- as.numeric(df_svm$Longitude)
@@ -248,7 +257,7 @@ lon <- as.numeric(df_svm$Longitude_Scaled*3)
 T1 <- as.factor(df_svm$Title.1.Eligible)
 df_austin <- data.frame(lat,lon,T1)
 
-austin <- get_googlemap(location= c(lon = -97.743061, lat = 30.267153), maptype = "roadmap",zoom = 11)
+austin <- get_googlemap(center = c(lon = -97.743061, lat = 30.267153), maptype = "roadmap",zoom = 11)
 
 df_austin$Longitude_Scaled <- df_svm$Longitude_Scaled
 df_austin$Latitude <- df_svm$Latitude
@@ -399,18 +408,18 @@ First let's take a look a the distribution of schools in San Antonio.
 
 ```{r}
 df_svm = filter(df_orig, (Title.1.Eligible == "Yes")|(Title.1.Eligible == "No")) %>%
-  filter(Location.City == 'SAN ANTONIO') %>%
-  select("Longitude", "Latitude", "Title.1.Eligible")
+  filter(Location.City == 'SAN ANTONIO')
 lat <- as.numeric(df_svm$Latitude)
 lon <- as.numeric(df_svm$Longitude)
 T1 <- as.factor(df_svm$Title.1.Eligible)
 df_sa <- data.frame(lat,lon,T1)
 
 
-sa <- get_googlemap(location= c(lon = -98.493628, lat = 29.424122), maptype = "roadmap",zoom = 11)
+
+sa <- get_googlemap(center= c(lon = -98.493628, lat = 29.424122), maptype = "roadmap",zoom = 11)
 ggmap(sa) + 
-  geom_point(data = df_sa, mapping = aes(x=lon,y=lat,colour=T1)) +
-  ditch_the_axes + ggtitle("Schools of San Antonio")
+  geom_point(data = df_sa, mapping = aes(x=lon,y=lat,colour = T1),size = 3) +
+  ditch_the_axes
 ```
 
 Looking at the map, it looks like schools not Title I eligible are centered towards North San Antonio.
@@ -451,15 +460,14 @@ Finally let's look at LA
 
 ```{r}
 df_svm = filter(df_orig, (Title.1.Eligible == "Yes")|(Title.1.Eligible == "No")) %>%
-  filter(Location.City == "LOS ANGELES") %>%
-  select("Longitude", "Latitude", "Title.1.Eligible")
+  filter(Location.City == "LOS ANGELES")
 lat <- as.numeric(df_svm$Latitude)
 lon <- as.numeric(df_svm$Longitude)
 T1 <- as.factor(df_svm$Title.1.Eligible)
 df_la <- data.frame(lat,lon,T1)
 
 
-la <- get_googlemap(location= c(lon = -118.293685, lat = 34.052234), maptype = "roadmap",zoom = 11)
+la <- get_googlemap(center= c(lon = -118.293685, lat = 34.052234), maptype = "roadmap",zoom = 11)
 ggmap(la) + 
   geom_point(data = df_la, mapping = aes(x=lon,y=lat,colour=T1)) +
   ditch_the_axes + ggtitle("Schools of Los Angeles")
@@ -504,7 +512,6 @@ Now let's look at the Texas.
 ```{r}
 df_svm = filter(df_orig, (Title.1.Eligible == "Yes")|(Title.1.Eligible == "No")) %>%
   filter(State == 'Texas') %>%
-  select("Longitude", "Latitude", "Title.1.Eligible","Location.City") %>%
   mutate(Longitude_Scaled = Longitude/3)
 df_svm$Latitude <- as.numeric(df_svm$Latitude)
 df_svm$Longitude <- as.numeric(df_svm$Longitude)
@@ -538,11 +545,10 @@ For now we will only look at elementary schools. About 81% of elementary schools
 ```{r}
 df_elem <- filter(df_orig, df_orig$level == 'Primary School') %>% filter(Title.1.Eligible == "Yes"|Title.1.Eligible == "No")
 nrow(subset(df_elem, df_elem$Title.1.Eligible == 'Yes'))/nrow(df_elem)
-df_elem <- select(df_elem, "State", "Location.City",
-                    "Longitude", "Latitude", "Title.1.Eligible", "Charter", "Total.Lunch", 
-                   "Full.Time.Teachers", "PreK.Offered", 
-                   "member", "am", "asian", "hisp", "black", "white", "pacific", "tr", "toteth")
-df_elem_test_vars <- select(df_elem, "Title.1.Eligible", "Total.Lunch", 
+df_elem <- dplyr::select(df_elem, "State", "Location.City",
+                    "Longitude", "Latitude", "Title.1.Eligible", "Total.Lunch", 
+                   "Full.Time.Teachers", "member", "am", "asian", "hisp", "black", "white", "pacific", "tr", "toteth")
+df_elem_test_vars <- dplyr::select(df_elem, "Title.1.Eligible", "Total.Lunch", 
                             "Full.Time.Teachers", "am", "asian", "hisp", "black", "white", "pacific", "tr", "toteth")
 nrow(subset(df_elem, df_elem$Title.1.Eligible=="Yes"))/nrow(df_elem) # Base line = 81 %
 ```
@@ -584,21 +590,21 @@ According to the plot, total number of students that are eligible for free/reduc
 Now let's test for the optimal number of predictors sampled for splitting at each node in a random forest.
 
 ```{r}
-df_elem1 <- select(df_elem, "Title.1.Eligible", "Total.Lunch", 
-                   "Full.Time.Teachers", "toteth", "white")
+df_elem1 <- dplyr::select(df_elem, Title.1.Eligible, Total.Lunch,
+                   Full.Time.Teachers, toteth, white)
 df_elem1$Title.1.Eligible <- as.factor(df_elem1$Title.1.Eligible)
 dim(df_elem1)
 train=sample(1:nrow(df_elem1),36474) # 70% of data
 # Testing number of predictors sampled for spliting at each node
-test.err=double(4)
-for(mtry in 1:4){
-  fit=randomForest(Title.1.Eligible~.,data=df_elem1,subset=train,mtry=mtry)
-  #oob.err[mtry]=fit$mse[400]
-  pred=predict(fit,df_elem1[-train,])
-  test.err[mtry]=mean(pred!=df_elem1[-train,]$Title.1.Eligible)
-  cat(mtry," ")
-}
-matplot(1:mtry,test.err,pch=19,col="blue",type="b",ylab="Misclassification Error",xlab="mtry")
+#test.err=double(4)
+#for(mtry in 1:4){
+#  fit=randomForest(Title.1.Eligible~.,data=df_elem1,subset=train,mtry=mtry)
+#  pred=predict(fit,df_elem1[-train,])
+#  test.err[mtry]=mean(pred!=df_elem1[-train,]$Title.1.Eligible)
+#  cat(mtry," ")
+#}
+test.err <- c(0.1475085, 0.1497473, 0.1506429, 0.1511546)
+matplot(1:4,test.err,pch=19,col="blue",type="b",ylab="Misclassification Error",xlab="mtry")
 ```
 
 Looking at the graph, the optimal mtry is 1. Let's try it out:
@@ -616,14 +622,15 @@ table(pred, df_elem1[-train,]$Title.1.Eligible)
 This produces a slightly higher sccuracy rate than the baseline. Now let's test for the optimal number of trees:
 
 ```{r}
-tree.error = double(10)
+#tree.error = double(10)
 numTrees <- 1:10*20
-for(i in 1:10){
-  fit=randomForest(Title.1.Eligible~.,data=df_elem1,subset=train,ntree=numTrees[i],mtry = min_mtry)
-  pred=predict(fit,df_elem1[-train,])
-  tree.error[i]=mean(pred!=df_elem1[-train,]$Title.1.Eligible)
-  cat(numTrees[i]," ")
-}
+#for(i in 1:10){
+#  fit=randomForest(Title.1.Eligible~.,data=df_elem1,subset=train,ntree=numTrees[i],mtry = min_mtry)
+#  pred=predict(fit,df_elem1[-train,])
+#  tree.error[i]=mean(pred!=df_elem1[-train,]$Title.1.Eligible)
+#  cat(numTrees[i]," ")
+#}
+tree.error <- c( 0.1538412, 0.1521141, 0.1506429, 0.1498113, 0.1494915, 0.1482121, 0.1466769, 0.1478283, 0.1471886, 0.1484040)
 matplot(numTrees,tree.error,pch=19,col="blue",type="b",ylab="Misclassification Error",xlab = "Number of Trees")
 min_tree <- numTrees[which.min(tree.error)]
 fit=randomForest(Title.1.Eligible~.,data=df_elem1,subset=train,ntree=numTrees[which.min(tree.error)],mtry=min_mtry)
