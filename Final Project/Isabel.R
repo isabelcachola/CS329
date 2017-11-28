@@ -118,3 +118,182 @@ ggplot(data=df_at_risk16,mapping = aes(y=at_risk_budget,x=ward+special_education
   annotate("rect", xmin = 480, xmax = 1020, ymin =220000, ymax =320000, fill="white", colour="red") +
   annotate("text", x = 750, y = 270000, label = equation(fit4), parse = TRUE)
 
+
+
+############################## Insight 2 ######################################
+# Add Total budget as column
+df_total <- dplyr::filter(fy16_school_budget_data, budget_allocation_category=="Total")
+dftemp <- fy16_budgeted_student_enrollment_data
+dftemp <- dftemp[order(dftemp$school_name),]
+df_total <- df_total[order(df_total$school_name),]
+dftemp$total <- df_total$amount
+df16_num <- dftemp[4:12]
+summary(df16_num)
+
+# Replace NAs with mean of column
+df16_num[] <- lapply(df16_num, function(x) ifelse(is.na(x), mean(x, na.rm = TRUE), x))
+
+# Make pretty heat map
+library(reshape2)
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(cormat){
+  cormat[lower.tri(cormat)]<- NA
+  return(cormat)
+}
+
+# move vars so it's pretty
+reorder_cormat <- function(cormat){
+  # Use correlation between variables as distance
+  dd <- as.dist((1-cormat)/2)
+  hc <- hclust(dd)
+  cormat <-cormat[hc$order, hc$order]
+}
+# Reorder the correlation matrix
+cormat <- reorder_cormat(round(cor(df16_num),2))
+# Melt the correlation matrix
+melted_cormat <- melt(get_upper_tri(cormat), na.rm = TRUE)
+# Create a ggheatmap
+
+ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+ # minimal theme
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1))+
+  coord_fixed() +
+  # Add corrlations for graph
+  geom_text(aes(Var2, Var1, label = value), color = "black", size = 4) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    axis.ticks = element_blank(),
+    legend.justification = c(1, 0),
+    legend.position = c(0.6, 0.7),
+    legend.direction = "horizontal")+
+  guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                               title.position = "top", title.hjust = 0.5))
+
+# Ridge Regression and Lasso
+df_norm <- data.frame(scale(df16_num[1:8])) # Normalize all predictors
+x=model.matrix(total~.-1,data=df_norm) 
+y=df16_num$total
+# Ridge Regression First
+fit.ridge=glmnet(x,y,alpha=0)
+plot(fit.ridge,xvar="lambda",label=TRUE)
+cv.ridge=cv.glmnet(x,y,alpha=0)
+plot(cv.ridge)
+
+# Fit Lasso
+fit.lasso=glmnet(x,y)
+plot(fit.lasso,xvar="lambda",label=TRUE)
+cv.lasso=cv.glmnet(x,y)
+plot(cv.lasso)
+coef(cv.lasso)
+
+# Validation
+train=sample(seq(113),80,replace=FALSE) # 70% of data
+lasso.tr=glmnet(x[train,],y[train])
+lasso.tr
+pred=predict(lasso.tr,x[-train,])
+dim(pred)
+rmse= sqrt(apply((y[-train]-pred)^2,2,mean))
+plot(log(lasso.tr$lambda),rmse,type="b",xlab="Log(lambda)")
+lam.best=lasso.tr$lambda[order(rmse)[1]]
+lam.best
+c<-coef(lasso.tr,s=lam.best)
+c
+rmse[which.min(rmse)]
+
+inds<-which(c!=0)
+variables<-row.names(c)[inds]
+variables
+
+library("plot3D")
+v1 <- df_norm$total_projected_enrollment
+v2 <- df_norm$special_education
+scatter3D(v1, v2, y,theta = -40, phi = 20, pch=20,size = 5,
+          clab = "Total Budget",
+          bty="g",xlab="Projected Enrollment", ylab="# Special Education",zlab="Total Budget")
+
+
+
+fit <- function(v){
+  b = c[inds]
+  int = b[1]
+  sol = int
+  for (i in 2:length(b)){
+    sol = sol + v[,i-1]*b[i]
+  }
+  return(sol)
+}
+
+# predict values on regular xy grid
+grid.lines = 26
+v1.pred <- seq(min(v1), max(v1), length.out = grid.lines)
+v2.pred <- seq(min(v2), max(v2), length.out = grid.lines)
+#xy <- expand.grid( x = x.pred, y = y.pred)
+z.pred <- matrix(fit(cbind(v1.pred,v2.pred)), 
+                 nrow = grid.lines, ncol = grid.lines)
+# fitted points for droplines to surface
+fitpoints <- fit(cbind(v1,v2))
+par(mfrow = c(1, 3))
+scatter3D(v1, v2, y,theta = 0, phi = 0, pch=20,size = 30,
+          colkey = FALSE,
+          bty="g",xlab="Projected Enrollment", ylab="# Special Education",zlab="Total Budget",  
+          surf = list(x = v1.pred, y = v2.pred, z = z.pred,  
+                      facets = NA, fit = fitpoints))
+scatter3D(v1, v2, y,theta = -45, phi = 0, pch=20,size = 30,
+          colkey = FALSE,
+          bty="g",xlab="Projected Enrollment", ylab="# Special Education",zlab="Total Budget",  
+          surf = list(x = v1.pred, y = v2.pred, z = z.pred,  
+                      facets = NA, fit = fitpoints))
+
+scatter3D(v1, v2, y,theta = 90, phi = 0, pch=20,size = 30,
+          colkey = FALSE,
+          bty="g",xlab="Projected Enrollment", ylab="# Special Education",zlab="Total Budget",  
+          surf = list(x = v1.pred, y = v2.pred, z = z.pred,  
+
+                                            facets = NA, fit = fitpoints))
+
+############################## Insight 3 ######################################
+df_total <- dplyr::filter(fy16_school_budget_data, budget_allocation_category=="Total")
+dftemp <- fy16_budgeted_student_enrollment_data
+dftemp <- dftemp[order(dftemp$school_name),]
+df_total <- df_total[order(df_total$school_name),]
+dftemp$total <- df_total$amount
+df16_num <- dftemp[4:12]
+summary(df16_num)
+
+# Replace NAs with mean of column
+df16_num[] <- lapply(df16_num, function(x) ifelse(is.na(x), mean(x, na.rm = TRUE), x))
+# Normalize all columns except total
+df16_num[,-c(9)] <- data.frame(scale(df16_num[,-9])) # Normalize all predictors
+library(e1071) 
+tuned = tune.svm(total~special_education, data = df16_num, 
+                 cost = 1:10,
+                 tunecontrol=tune.control(cross=10))
+tuned
+best_cost <- tuned$best.model$cost
+
+svmfit=svm(total~special_education, data = df16_num,cost=best_cost)
+print(svmfit)
+fit = lm(total~special_education, data = df16_num)
+summary(fit)
+summary(svm.fit)
+
+library(DAAG)
+cv.lm(data=df16_num,fit,m=10,plotit = FALSE)
+error <- df16_num$total - predictedY
+svm.mse <- mean(error^2)
+svm.mse
+
+par(mfrow = c(1, 1))
+plot(total~special_education, data = df16_num,pch=20)
+predictedY <- predict(svm.fit,df16_num)
+points(df16_num$special_education,predictedY,col = "red", pch=18)
+abline(a=fit$coefficients[1],b=fit$coefficients[2],col="blue")
