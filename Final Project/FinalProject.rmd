@@ -106,8 +106,8 @@ fy_15_budget_by_line_item <- data.world::query(
 
 ```{r}
 fy13=dplyr::full_join(fy13_budgeted_student_enrollment_data,fy13_school_budget_data,by=c("school_code"="code","school_name"="school","fiscal_year","school_type","ward"))
-fy14=dplyr::full_join(fy14_budgeted_student_enrollment_data,fy14_school_budget_data,by=c("school_code","school_name","fiscal_year","school_type","ward"))
-fy15=dplyr::full_join(fy15_budgeted_student_enrollment_data,fy15_school_budget_data,by=c("school_code","school_name","fiscal_year","school_type","ward"))
+fy14=dplyr::full_join(fy14_budgeted_student_enrollment_data,by=c("school_code","school_name","fiscal_year","school_type","ward"))
+fy15=dplyr::full_join(fy15_budgeted_student_enrollment_data,by=c("school_code","school_name","fiscal_year","school_type","ward"))
 fy16=dplyr::full_join(fy16_budgeted_student_enrollment_data,fy16_school_budget_data,by=c("school_name","school_type","ward"))
 
 fy13_aggregate_budget=aggregate(fy13$amount,by=list(Category=fy13$budget_category),FUN=sum)

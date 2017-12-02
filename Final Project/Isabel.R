@@ -104,10 +104,11 @@ regfit.full=regsubsets(at_risk_budget~.,data=df_num)
 reg.summary = summary(regfit.full)
 reg.summary
 plot(reg.summary$cp,xlab="Number of Variables",ylab="Cp")
-which.min(reg.summary$cp)
 points(which.min(reg.summary$cp),reg.summary$cp[which.min(reg.summary$cp)],pch=20,col="red")
 plot(regfit.full,scale="Cp")
 coef(regfit.full,which.min(reg.summary$cp))
+
+
 fit4 = lm(at_risk_budget~ward+special_education+homeless_foster+direct_certs, data = df_at_risk16)
 summary(fit4)
 
@@ -152,6 +153,7 @@ reorder_cormat <- function(cormat){
 cormat <- reorder_cormat(round(cor(df16_num),2))
 # Melt the correlation matrix
 melted_cormat <- melt(get_upper_tri(cormat), na.rm = TRUE)
+
 # Create a ggheatmap
 
 ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
@@ -179,7 +181,8 @@ ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
                                title.position = "top", title.hjust = 0.5))
 
 # Ridge Regression and Lasso
-df_norm <- data.frame(scale(df16_num[1:8])) # Normalize all predictors
+df_norm <- df16_num
+df_norm[1:8] <- scale(df_norm[1:8]) # Normalize all predictors
 x=model.matrix(total~.-1,data=df_norm) 
 y=df16_num$total
 # Ridge Regression First
@@ -193,47 +196,27 @@ fit.lasso=glmnet(x,y)
 plot(fit.lasso,xvar="lambda",label=TRUE)
 cv.lasso=cv.glmnet(x,y)
 plot(cv.lasso)
-coef(cv.lasso)
-
-# Validation
-train=sample(seq(113),80,replace=FALSE) # 70% of data
-lasso.tr=glmnet(x[train,],y[train])
-lasso.tr
-pred=predict(lasso.tr,x[-train,])
-dim(pred)
-rmse= sqrt(apply((y[-train]-pred)^2,2,mean))
-plot(log(lasso.tr$lambda),rmse,type="b",xlab="Log(lambda)")
-lam.best=lasso.tr$lambda[order(rmse)[1]]
-lam.best
-c<-coef(lasso.tr,s=lam.best)
-c
-rmse[which.min(rmse)]
-
-inds<-which(c!=0)
-variables<-row.names(c)[inds]
-variables
+c <- coef(cv.lasso)
 
 library("plot3D")
 v1 <- df_norm$total_projected_enrollment
 v2 <- df_norm$special_education
-scatter3D(v1, v2, y,theta = -40, phi = 20, pch=20,size = 5,
-          clab = "Total Budget",
-          bty="g",xlab="Projected Enrollment", ylab="# Special Education",zlab="Total Budget")
+#scatter3D(v1, v2, y,theta = -40, phi = 20, pch=20,size = 5,
+#          clab = "Total Budget",
+#          bty="g",xlab="Projected Enrollment", ylab="# Special Education",zlab="Total Budget")
 
 
 
 fit <- function(v){
-  b = c[inds]
-  int = b[1]
-  sol = int
-  for (i in 2:length(b)){
-    sol = sol + v[,i-1]*b[i]
-  }
+  int = c["(Intercept)",]
+  b1 = c["total_projected_enrollment",]
+  b2 = c["special_education",]
+  sol = int + b1*v[,1] + b2*v[,2]
   return(sol)
 }
 
 # predict values on regular xy grid
-grid.lines = 26
+grid.lines = 30
 v1.pred <- seq(min(v1), max(v1), length.out = grid.lines)
 v2.pred <- seq(min(v2), max(v2), length.out = grid.lines)
 #xy <- expand.grid( x = x.pred, y = y.pred)
@@ -242,6 +225,7 @@ z.pred <- matrix(fit(cbind(v1.pred,v2.pred)),
 # fitted points for droplines to surface
 fitpoints <- fit(cbind(v1,v2))
 par(mfrow = c(1, 3))
+
 scatter3D(v1, v2, y,theta = 0, phi = 0, pch=20,size = 30,
           colkey = FALSE,
           bty="g",xlab="Projected Enrollment", ylab="# Special Education",zlab="Total Budget",  
@@ -273,27 +257,146 @@ summary(df16_num)
 df16_num[] <- lapply(df16_num, function(x) ifelse(is.na(x), mean(x, na.rm = TRUE), x))
 # Normalize all columns except total
 df16_num[,-c(9)] <- data.frame(scale(df16_num[,-9])) # Normalize all predictors
+
 library(e1071) 
+
+#SVM
 tuned = tune.svm(total~special_education, data = df16_num, 
                  cost = 1:10,
                  tunecontrol=tune.control(cross=10))
 tuned
 best_cost <- tuned$best.model$cost
-
 svmfit=svm(total~special_education, data = df16_num,cost=best_cost)
-print(svmfit)
+#LM
 fit = lm(total~special_education, data = df16_num)
+#Summaries of both
 summary(fit)
-summary(svm.fit)
+summary(svmfit)
 
 library(DAAG)
-cv.lm(data=df16_num,fit,m=10,plotit = FALSE)
+
+par(mfrow = c(1, 1))
+plot(total~special_education, data = df16_num,pch=20)
+predictedY <- predict(svmfit,df16_num)
+points(df16_num$special_education,predictedY,col = "red", pch=18)
+abline(a=fit$coefficients[1],b=fit$coefficients[2],col="blue")
+
+# MSE
+lm.mse <-mean(fit$residuals^2)
+lm.mse
 error <- df16_num$total - predictedY
 svm.mse <- mean(error^2)
 svm.mse
 
-par(mfrow = c(1, 1))
-plot(total~special_education, data = df16_num,pch=20)
-predictedY <- predict(svm.fit,df16_num)
-points(df16_num$special_education,predictedY,col = "red", pch=18)
-abline(a=fit$coefficients[1],b=fit$coefficients[2],col="blue")
+
+sd(df16_num$total)
+
+ggplot(data = df16_num, mapping = aes(x=total)) + 
+  geom_histogram(aes(y =..density..),bins=20) +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(df16_num$total), sd = sd(df16_num$total)),
+                colour="red") 
+
+############################## Insight 4 ######################################
+# Add At Risk Funding
+df_at_risk_am <- dplyr::filter(fy16_school_budget_data, budget_allocation_category=="At-Risk")
+df_at_risk16 <- fy16_budgeted_student_enrollment_data
+df_at_risk16 <- df_at_risk16[order(df_at_risk16$school_name),]
+df_at_risk_am <- df_at_risk_am[order(df_at_risk_am$school_name),]
+df_at_risk16$at_risk_budget <- df_at_risk_am$amount
+#Add Title Funding
+df_at_risk_am <- dplyr::filter(fy16_school_budget_data, budget_allocation_category=="Title")
+df_at_risk_am <- df_at_risk_am[order(df_at_risk_am$school_name),]
+df_at_risk16$title_funding <- df_at_risk_am$amount
+df_at_risk16$perc_at_risk <- df_at_risk_am$at_risk_students
+
+#summary(df_at_risk16)
+#pairs(df_at_risk16[5:14])
+#names(df_at_risk16)
+
+fit <- lm (title_funding~at_risk_budget, data = df_at_risk16)
+ggplot(data=df_at_risk16, mapping = aes(x=at_risk_budget , y=title_funding,colour=school_type)) +
+    geom_point() + geom_smooth(method = 'lm',colour = "red")
+summary(fit)
+
+############################## Insight 5 ######################################
+
+# Random Forest
+require(randomForest)
+set.seed(101)
+train=sample(1:113,80)
+
+colnames(df_at_risk16)[10] <- paste("one_year_older")
+df <- data.frame(df_at_risk16[5:14])
+#summary(df)
+df[] <- lapply(df, function(x) ifelse(is.na(x), median(x, na.rm = TRUE), x))
+dim(df)
+# Test for optimal mtry
+oob.err=double(9)
+test.err=double(9)
+for(mtry in 1:9){
+  fit=randomForest(at_risk_budget~.,data=df,subset=train,mtry=mtry,ntree=400)
+  oob.err[mtry]=fit$mse[400]
+  pred=predict(fit,df[-train,])
+  test.err[mtry]=with(df[-train,],mean((at_risk_budget-pred)^2))
+  cat(mtry," ")
+}
+matplot(1:mtry,cbind(test.err,oob.err),pch=19,col=c("red","blue"),type="b",ylab="Mean Squared Error")
+legend("topright",legend=c("Test","OOB"),pch=19,col=c("red","blue"))
+mtry <- which.min(oob.err)
+
+# Test for optimal number of trees
+oob.err=double(6)
+test.err=double(6)
+ntree = seq(500,1000,100)
+for(idx in 1:6){
+  fit=randomForest(at_risk_budget~.,data=df,subset=train,mtry=mtry,ntree=ntree[idx])
+  oob.err[idx]=fit$mse[400]
+  pred=predict(fit,df[-train,])
+  test.err[idx]=with(df[-train,],mean((at_risk_budget-pred)^2))
+  cat(ntree[idx]," ")
+}
+matplot(ntree,cbind(test.err,oob.err),pch=19,col=c("red","blue"),type="b",ylab="Mean Squared Error")
+legend("topright",legend=c("Test","OOB"),pch=19,col=c("red","blue"))
+ntree <- ntree[which.min(test.err)]
+
+rf.fit=randomForest(at_risk_budget~.,data=df,subset=train,mtry=mtry,ntree=ntree)
+rf.fit
+
+# Boosting
+require(gbm)
+boost=gbm(at_risk_budget~.,data=df[train,],
+          distribution="gaussian",
+          n.trees=ntree,shrinkage=0.01,
+          interaction.depth=4)
+summary(boost)
+par(mfrow=c(2,2))
+plot(boost,i="direct_certs",col="red")
+plot(boost,i="perc_at_risk",col="blue")
+plot(boost,i="title_funding",col="blue")
+plot(boost,i="one_year_older",col="blue")
+par(mfrow=c(1,1))
+
+# Compare to linear
+fit = lm(at_risk_budget~.,data = df[train,])
+summary(fit)
+
+# Make predictions and compare MSE
+dim(df[-train,])
+pred.rf = predict(rf.fit, df[-train,])
+rf.err = mean((pred.rf-df[-train,])^2)/33
+rf.err
+
+pred.boost = predict(boost, df[-train,],n.trees=400)
+boost.err = mean((pred.boost-df[-train,])^2)/33
+
+pred.lm = predict(fit,df[-train,])
+lm.err = mean ((pred.lm - df[-train,])^2)/33
+lm.err
+
+errors = data.frame(err = c(rf.err, boost.err,lm.err),row.names=c("Random Forest","Boosting","Least Sqaures"))
+errors
+# Which has the minimum error?
+row.names(errors)[which.min(errors$err)]
+
+### SVM ###
