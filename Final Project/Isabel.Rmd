@@ -95,6 +95,25 @@ fy_15_budget_by_line_item <- data.world::query(
 
 ### Introduction
 
+To improve	 equitable	 public	 school	 funding	 across	 the	 city, the	DC	Council	passed	the	Fair Student Funding and	SchoolBased Budgeting	 Amendment Act in	 2013.	 This	 act	 added, for	 the	 first	 time, an at-risk weight	 to	 the	 Uniform	 Per	Student	 Funding	 Formula	 (UPSFF)-meaning	 that	 all	 DC	
+public	 schools,	 both	 DCPS	 and	 public	 charter	 schools,	 now	receive	additional	 funding	based	on	 the	number	of	enrolled	students	at	their	school	who	meet	the	at-risk criteria.
+
+The Fair Funding Act defines a student as at-risk
+if they identify as:
+
+1. Homeless;
+
+2. In foster care;
+
+3. Eligible for food stamps or welfare; or
+
+4. One year older, or more, than the expected
+age for their enrolled grade level. 
+
+To improve	 equitable	 public	 school	 funding	 across	 the	 city,	the	DC	Council	passed	the	Fair Student Funding and	SchoolBased Budgeting	 Amendment Act in	 2013.	 This	 act	 added, for	 the	 first	 time, an at-risk weight	 to	 the	 Uniform	 Per	Student	 Funding	 Formula	 (UPSFF)-meaning	 that	 all	 DC	public	 schools,	 both	 DCPS	 and	 public	 charter	 schools,	 now	receive	additional	 funding	based	on	 the	number	of	enrolled	students	at	their	school	who	meet	the	at-risk criteria.
+
+Currently, schools receive $2,079	per	student	who	meets	the	at-risk	criteria.
+
 ```{r, include=FALSE}
 # Setup
 # Add at risk budget as column
@@ -152,57 +171,10 @@ Let's start with a simple linear fit.
 ```{r}
 fit = lm(at_risk_budget~.,data = df[train,])
 summary(fit)
+fit
 ```
 
 This produced a relative high R2 and a low p-value. 
-
-### Subset Selection
-
-Let's use exhaustive subset selection for predictors of At Risk Funding.
-```{r,include=FALSE}
-#df_at_risk16 <- subset(df_at_risk16, !is.na(df_at_risk16$special_education))
-
-equation = function(x) {
-  lm_coef <- list(a = round(coef(x)[1], digits = 2),
-                  b = round(coef(x)[2], digits = 2),
-                  r2 = round(summary(x)$r.squared, digits = 2));
-  lm_eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(R)^2~"="~r2,lm_coef)
-  as.character(as.expression(lm_eq));                 
-}
-#df_num <- df_at_risk16[c(4:12)]
-```
-
-```{r}
-regfit.full=regsubsets(at_risk_budget~.,data=df[train,])
-reg.summary = summary(regfit.full)
-reg.summary
-plot(reg.summary$cp,xlab="Number of Variables",ylab="Cp")
-points(which.min(reg.summary$cp),reg.summary$cp[which.min(reg.summary$cp)],pch=20,col="red")
-plot(regfit.full,scale="Cp")
-coef(regfit.full,which.min(reg.summary$cp))
-```
-
-According to subset selection, the optimal predictors are the following: 
-
-- **Number of English Language Learners**
-- **Number of Homeless/Foster Students:**
-- **Number of students one year older**
-- **Total Projected Enrollment**
-- **Title Funding**
-- **Percent of Students At Risk**
-
-Let's try it out:
-```{r}
-subset.fit = lm(at_risk_budget~english_language_learners+homeless_foster+one_year_older+total_projected_enrollment+title_funding+perc_at_risk, data = df[train,])
-summary(subset.fit)
-
-ggplot(data=df_at_risk16,mapping = aes(y=at_risk_budget,x=english_language_learners+homeless_foster+one_year_older+total_projected_enrollment+title_funding+perc_at_risk)) +
-  geom_point() + xlab("X") +
-  geom_smooth(method='lm', colour="red") +
-  scale_y_continuous(label=scales::comma)
-```
-
-This produces a relatively high R2 and low p-value on the training set.
 
 ### Random Forest
 
@@ -245,7 +217,7 @@ rf.fit=randomForest(at_risk_budget~.,data=df,subset=train,mtry=mtry,ntree=ntree)
 rf.fit
 ```
 
-The random forest produces a lower $$R^2$$ than the linear model.
+The random forest produces a lower R2 than the linear model.
 
 ###Boosting
 
@@ -265,8 +237,8 @@ Let's look at the plots for the top four predictors:
 par(mfrow=c(2,2))
 plot(boost,i="direct_certs",col="red")
 plot(boost,i="perc_at_risk",col="blue")
-plot(boost,i="title_funding",col="blue")
-plot(boost,i="one_year_older",col="blue")
+plot(boost,i="title_funding",col="red")
+plot(boost,i="special_education",col="blue")
 ```
 
 ```{r,include=FALSE}
@@ -327,17 +299,14 @@ predictedY <- predict(svmfit,df[-train,])
 error <- df[-train,]$at_risk_budget - predictedY
 svm.err <- mean(error^2)/m
 
-pred.subset <- predict(subset.fit, df[-train,])
-subset.err <- mean ((pred.subset - df[-train,])^2)/m
-
 pred.ridge <- predict(fit.ridge, s=0, newx=model.matrix(at_risk_budget~.-1,data=df_norm[-train,]) )
 ridge.err <- mean((pred.ridge- df[-train,])^2)/m
 
 pred.lasso <- predict(fit.lasso, s=0, newx=model.matrix(at_risk_budget~.-1,data=df_norm[-train,]) )
 lasso.err <- mean((pred.lasso- df[-train,])^2)/m
 
-errors = data.frame(method=c("Random Forest","Boosting","Linear Regression","Support Vector Machine","Subset Selection","Ridge Regression","Lasso"),
-                    err = c(rf.err, boost.err,lm.err,svm.err,subset.err, ridge.err,lasso.err))
+errors = data.frame(method=c("Random Forest","Boosting","Linear Regression","Support Vector Machine","Ridge Regression","Lasso"),
+                    err = c(rf.err, boost.err,lm.err,svm.err, ridge.err,lasso.err))
 errors
 ```
 
