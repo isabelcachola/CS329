@@ -628,6 +628,8 @@ Ward 8 (the asterisk) interests me most here. It seems to have the highest varia
 
 #### Flaws in My Approach
 
-* I should have tried to predict the absolute value of the school's percent change in enrollment. As is, the range of percent change in enrollment was -100% to +100%. Without meaning to, I ended up trying to predict two things at once: how much the school changed by, and whether its enrollment rose or declined. 
+* I should have predicted the absolute value of the school's percent change in enrollment, not included positive and negative change. Without meaning to, I ended up trying to predict two things at once: how much the school changed, and whether its enrollment rose or fell. 
 
-* I could have used more model types than only boosting and model selection. *However*, my thinking was that because these two very exhaustive techniques were giving me such disappointing results, the problem must be the predictors I was feeding them, not the techniques themselves (which, as I said, are exhaustive). Therefore, linking new datasets and crafting new predictors seemed to be a better use of my time.
+* I could have used more model types than only boosting and model selection. But I figured that if these two exhaustive techniques were giving me poor results, the problem lay with the predictors. Linking new datasets seemed a better use of my time than building other model types on the same bad predictors.
+
+* I could have used bootstrap. As I've discussed in detail on data.world, cross-validation didn't work for my data because of the sheer number of zip code categories I had. That left simple validation using a test set of about 30 observations. I did a kind of manual cross-val to avoid skewed results: every time I made a model, I ran the code four times on four random train/test sets, then selected the most representative result. Bootstrap would have been more elegant. 
